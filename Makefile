@@ -1,285 +1,279 @@
-# Makefile for Tree Models Project
-# Provides common development tasks and CI/CD commands
-
-.PHONY: help install install-dev clean lint format test test-unit test-integration test-slow test-all coverage build docs serve-docs security check pre-commit setup-dev
-
-# Default target
-.DEFAULT_GOAL := help
+.PHONY: help setup install install-dev test test-unit test-integration test-performance test-coverage lint format clean build docs serve-docs
 
 # Variables
-PYTHON := python
-PIP := pip
+PYTHON := python3
+PIP := pip3
 PYTEST := pytest
-BLACK := black
-ISORT := isort
-FLAKE8 := flake8
-MYPY := mypy
-BANDIT := bandit
-SAFETY := safety
+PROJECT_NAME := tree_models
+VERSION := $(shell grep '^version' pyproject.toml | cut -d'"' -f2)
 
-# Project directories
-SRC_DIRS := tree_models config src
-TEST_DIR := tests
-DOCS_DIR := docs
+# Colors for output
+GREEN := \033[0;32m
+YELLOW := \033[0;33m
+RED := \033[0;31m
+NC := \033[0m # No Color
 
+# Help target
 help: ## Show this help message
-	@echo "Tree Models - Development Commands"
-	@echo "=================================="
-	@echo ""
-	@echo "Setup Commands:"
-	@echo "  setup-dev     Setup development environment"
-	@echo "  install       Install package in normal mode"
-	@echo "  install-dev   Install package in development mode"
-	@echo ""
-	@echo "Code Quality Commands:"
-	@echo "  format        Format code with black and isort"
-	@echo "  lint          Run all linting checks"
-	@echo "  check         Run all code quality checks"
-	@echo "  security      Run security scans"
-	@echo "  pre-commit    Run pre-commit hooks"
-	@echo ""
-	@echo "Testing Commands:"
-	@echo "  test          Run all tests (unit + integration, no slow)"
-	@echo "  test-unit     Run unit tests only"
-	@echo "  test-integration  Run integration tests only"
-	@echo "  test-slow     Run slow tests only"
-	@echo "  test-all      Run all tests including slow ones"
-	@echo "  coverage      Generate coverage report"
-	@echo ""
-	@echo "Build Commands:"
-	@echo "  clean         Clean build artifacts"
-	@echo "  build         Build package"
-	@echo "  docs          Build documentation"
-	@echo "  serve-docs    Serve documentation locally"
-	@echo ""
-	@echo "CI Commands:"
-	@echo "  ci-lint       Run CI linting pipeline"
-	@echo "  ci-test       Run CI testing pipeline"
-	@echo "  ci-build      Run CI build pipeline"
-	@echo "  ci-all        Run complete CI pipeline"
+	@echo "$(GREEN)Tree Models Makefile$(NC)"
+	@echo "Available commands:"
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(YELLOW)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-# Setup Commands
-setup-dev: ## Setup development environment
-	@echo "Setting up development environment..."
+# Setup and Installation
+setup: ## Setup development environment
+	@echo "$(GREEN)Setting up development environment...$(NC)"
 	$(PYTHON) -m venv venv
-	@echo "Activate virtual environment with: source venv/bin/activate"
-	@echo "Then run: make install-dev"
+	@echo "$(YELLOW)Activate virtual environment with: source venv/bin/activate$(NC)"
+	@echo "$(YELLOW)Then run: make install-dev$(NC)"
 
-install: ## Install package in normal mode
+install: ## Install package in production mode
+	@echo "$(GREEN)Installing $(PROJECT_NAME) in production mode...$(NC)"
 	$(PIP) install -e .
 
 install-dev: ## Install package in development mode with all dependencies
-	$(PIP) install --upgrade pip setuptools wheel
-	$(PIP) install -e ".[dev,docs,all]"
+	@echo "$(GREEN)Installing $(PROJECT_NAME) in development mode...$(NC)"
+	$(PIP) install -e ".[dev,test,docs,ml]"
+	$(PIP) install pre-commit
 	pre-commit install
-	@echo "Development environment ready!"
 
-# Code Quality Commands
-format: ## Format code with black and isort
-	@echo "Formatting code..."
-	$(BLACK) $(SRC_DIRS) $(TEST_DIR)
-	$(ISORT) $(SRC_DIRS) $(TEST_DIR)
-	@echo "Code formatting complete!"
+install-minimal: ## Install package with minimal dependencies
+	@echo "$(GREEN)Installing $(PROJECT_NAME) with minimal dependencies...$(NC)"
+	$(PIP) install -e ".[minimal]"
 
-lint: ## Run all linting checks
-	@echo "Running linting checks..."
-	$(BLACK) --check --diff $(SRC_DIRS) $(TEST_DIR)
-	$(ISORT) --check-only --diff $(SRC_DIRS) $(TEST_DIR)
-	$(FLAKE8) $(SRC_DIRS) $(TEST_DIR)
-	$(MYPY) $(SRC_DIRS) --ignore-missing-imports
-	@echo "Linting complete!"
+# Testing
+test: ## Run all tests
+	@echo "$(GREEN)Running all tests...$(NC)"
+	$(PYTEST) tests/ -v --tb=short
 
-security: ## Run security scans
-	@echo "Running security scans..."
-	$(BANDIT) -r $(SRC_DIRS) -f json -o reports/bandit-report.json || true
-	$(BANDIT) -r $(SRC_DIRS) -f txt
-	$(SAFETY) check --json --output reports/safety-report.json || true
-	$(SAFETY) check
-	@echo "Security scan complete!"
-
-check: lint security ## Run all code quality checks
-
-pre-commit: ## Run pre-commit hooks on all files
-	pre-commit run --all-files
-
-# Testing Commands
 test-unit: ## Run unit tests only
-	@echo "Running unit tests..."
-	$(PYTEST) $(TEST_DIR) -v -m "unit and not slow" \
-		--cov=$(SRC_DIRS) \
-		--cov-report=term-missing \
-		--cov-report=html:reports/htmlcov \
-		--junit-xml=reports/junit-unit.xml
+	@echo "$(GREEN)Running unit tests...$(NC)"
+	$(PYTEST) tests/unit/ -v
 
 test-integration: ## Run integration tests only
-	@echo "Running integration tests..."
-	$(PYTEST) $(TEST_DIR) -v -m "integration and not slow" \
-		--cov=$(SRC_DIRS) \
-		--cov-append \
-		--cov-report=term-missing \
-		--junit-xml=reports/junit-integration.xml
+	@echo "$(GREEN)Running integration tests...$(NC)"
+	$(PYTEST) tests/integration/ -v
 
-test-slow: ## Run slow tests only
-	@echo "Running slow tests..."
-	$(PYTEST) $(TEST_DIR) -v -m "slow" \
-		--cov=$(SRC_DIRS) \
-		--cov-append \
-		--cov-report=term-missing \
-		--junit-xml=reports/junit-slow.xml \
-		--timeout=3600
+test-performance: ## Run performance benchmarks
+	@echo "$(GREEN)Running performance benchmarks...$(NC)"
+	$(PYTEST) tests/performance/ -v -s --tb=short
 
-test: test-unit test-integration ## Run all tests (unit + integration, no slow)
+test-coverage: ## Run tests with coverage report
+	@echo "$(GREEN)Running tests with coverage...$(NC)"
+	$(PYTEST) tests/ --cov=$(PROJECT_NAME) --cov-report=html --cov-report=term-missing --cov-fail-under=80
+	@echo "$(YELLOW)Coverage report generated in htmlcov/index.html$(NC)"
 
-test-all: test-unit test-integration test-slow ## Run all tests including slow ones
+test-fast: ## Run tests excluding slow ones
+	@echo "$(GREEN)Running fast tests only...$(NC)"
+	$(PYTEST) tests/ -v -m "not slow" --tb=short
 
-coverage: ## Generate detailed coverage report
-	@echo "Generating coverage report..."
-	$(PYTEST) $(TEST_DIR) \
-		--cov=$(SRC_DIRS) \
-		--cov-report=html:reports/htmlcov \
-		--cov-report=xml:reports/coverage.xml \
-		--cov-report=term-missing \
-		--cov-fail-under=80
-	@echo "Coverage report generated in reports/htmlcov/"
+test-ml: ## Run tests requiring ML libraries (XGBoost, LightGBM, etc.)
+	@echo "$(GREEN)Running ML library tests...$(NC)"
+	$(PYTEST) tests/ -v -m "requires_ml_libs"
 
-# Build Commands
-clean: ## Clean build artifacts and cache files
-	@echo "Cleaning build artifacts..."
-	rm -rf build/ dist/ *.egg-info/
-	rm -rf .pytest_cache/ .coverage .mypy_cache/
-	rm -rf reports/htmlcov/ reports/*.xml reports/*.json
-	find . -type d -name __pycache__ -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
-	@echo "Clean complete!"
+# Code Quality
+lint: ## Run linting checks
+	@echo "$(GREEN)Running linting checks...$(NC)"
+	flake8 $(PROJECT_NAME)/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
+	flake8 $(PROJECT_NAME)/ tests/ --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+	mypy $(PROJECT_NAME)/ --ignore-missing-imports
 
-build: clean ## Build package
-	@echo "Building package..."
-	mkdir -p reports
-	$(PYTHON) -m build
-	$(PYTHON) -m twine check dist/*
-	@echo "Package built successfully!"
+format: ## Format code with black and isort
+	@echo "$(GREEN)Formatting code...$(NC)"
+	black $(PROJECT_NAME)/ tests/ --line-length=120
+	isort $(PROJECT_NAME)/ tests/ --profile black --line-length=120
 
-# Documentation Commands
+format-check: ## Check code formatting without making changes
+	@echo "$(GREEN)Checking code formatting...$(NC)"
+	black $(PROJECT_NAME)/ tests/ --check --line-length=120
+	isort $(PROJECT_NAME)/ tests/ --check-only --profile black --line-length=120
+
+# Security and Safety
+security: ## Run security checks
+	@echo "$(GREEN)Running security checks...$(NC)"
+	safety check
+	bandit -r $(PROJECT_NAME)/ -f json -o security-report.json || true
+	@echo "$(YELLOW)Security report generated in security-report.json$(NC)"
+
+# Documentation
 docs: ## Build documentation
-	@echo "Building documentation..."
-	mkdocs build --strict
-	@echo "Documentation built in site/"
+	@echo "$(GREEN)Building documentation...$(NC)"
+	cd docs && make html
+	@echo "$(YELLOW)Documentation built in docs/_build/html/$(NC)"
 
-serve-docs: ## Serve documentation locally
-	@echo "Serving documentation at http://localhost:8000"
-	mkdocs serve
+docs-clean: ## Clean documentation build
+	@echo "$(GREEN)Cleaning documentation...$(NC)"
+	cd docs && make clean
 
-# CI Pipeline Commands
-ci-lint: ## Run CI linting pipeline
-	@echo "Running CI linting pipeline..."
-	mkdir -p reports
-	$(MAKE) format lint security
-	@echo "CI linting pipeline complete!"
+serve-docs: docs ## Build and serve documentation locally
+	@echo "$(GREEN)Serving documentation at http://localhost:8000$(NC)"
+	cd docs/_build/html && $(PYTHON) -m http.server 8000
 
-ci-test: ## Run CI testing pipeline
-	@echo "Running CI testing pipeline..."
-	mkdir -p reports
-	$(MAKE) test coverage
-	@echo "CI testing pipeline complete!"
+# Building and Distribution
+build: clean ## Build source and wheel distributions
+	@echo "$(GREEN)Building $(PROJECT_NAME) v$(VERSION)...$(NC)"
+	$(PYTHON) -m build
+	@echo "$(YELLOW)Built distributions in dist/$(NC)"
 
-ci-build: ## Run CI build pipeline
-	@echo "Running CI build pipeline..."
-	$(MAKE) build docs
-	@echo "CI build pipeline complete!"
+build-wheel: ## Build wheel distribution only
+	@echo "$(GREEN)Building wheel for $(PROJECT_NAME)...$(NC)"
+	$(PYTHON) -m build --wheel
 
-ci-all: ci-lint ci-test ci-build ## Run complete CI pipeline
-	@echo "Complete CI pipeline finished successfully!"
+build-sdist: ## Build source distribution only
+	@echo "$(GREEN)Building source distribution for $(PROJECT_NAME)...$(NC)"
+	$(PYTHON) -m build --sdist
 
-# Development Helpers
-install-pre-commit: ## Install pre-commit hooks
+# Publishing
+publish-test: build ## Publish to Test PyPI
+	@echo "$(GREEN)Publishing to Test PyPI...$(NC)"
+	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+	@echo "$(YELLOW)Uploaded to https://test.pypi.org/project/$(PROJECT_NAME)/$(NC)"
+
+publish: build ## Publish to PyPI
+	@echo "$(RED)Publishing to PyPI...$(NC)"
+	@read -p "Are you sure you want to publish v$(VERSION) to PyPI? [y/N]: " confirm && \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		twine upload dist/*; \
+		echo "$(GREEN)Published $(PROJECT_NAME) v$(VERSION) to PyPI$(NC)"; \
+	else \
+		echo "$(YELLOW)Cancelled publication$(NC)"; \
+	fi
+
+# Development Utilities
+clean: ## Clean build artifacts and temporary files
+	@echo "$(GREEN)Cleaning build artifacts...$(NC)"
+	rm -rf build/
+	rm -rf dist/
+	rm -rf *.egg-info/
+	rm -rf .pytest_cache/
+	rm -rf .coverage
+	rm -rf htmlcov/
+	rm -rf .mypy_cache/
+	find . -type d -name __pycache__ -delete
+	find . -type f -name "*.pyc" -delete
+	find . -type f -name "*.pyo" -delete
+
+clean-all: clean ## Clean everything including virtual environment
+	@echo "$(GREEN)Cleaning everything...$(NC)"
+	rm -rf venv/
+	rm -rf .venv/
+
+setup-hooks: ## Setup pre-commit hooks
+	@echo "$(GREEN)Setting up pre-commit hooks...$(NC)"
 	pre-commit install
 	pre-commit install --hook-type commit-msg
 
-update-deps: ## Update development dependencies
+update-deps: ## Update all dependencies
+	@echo "$(GREEN)Updating dependencies...$(NC)"
 	$(PIP) install --upgrade pip setuptools wheel
-	$(PIP) install --upgrade -e ".[dev,docs,all]"
+	$(PIP) install --upgrade -e ".[dev,test,docs,ml]"
 
-run-example: ## Run example training script
-	$(PYTHON) notebooks/train_xgb_baseline.py --create_sample --experiment_name "makefile_test"
-
-demo-config: ## Run configuration system demo
-	$(PYTHON) config/config_demo.py
-
-# Quality Gates
-quality-gate: lint test ## Quality gate for CI/CD
-	@echo "All quality checks passed!"
-
-release-check: quality-gate build ## Pre-release quality check
-	@echo "Release quality check passed!"
-
-# Docker Commands (if needed)
+# Docker support
 docker-build: ## Build Docker image
-	docker build -t tree-models:latest .
+	@echo "$(GREEN)Building Docker image...$(NC)"
+	docker build -t $(PROJECT_NAME):$(VERSION) .
+	docker build -t $(PROJECT_NAME):latest .
 
 docker-test: ## Run tests in Docker
-	docker run --rm tree-models:latest make test
+	@echo "$(GREEN)Running tests in Docker...$(NC)"
+	docker run --rm $(PROJECT_NAME):latest make test
 
-# Utility Commands
-show-coverage: ## Show current test coverage
-	$(PYTEST) $(TEST_DIR) --cov=$(SRC_DIRS) --cov-report=term-missing --tb=no -q
+docker-run: ## Run interactive shell in Docker
+	@echo "$(GREEN)Starting Docker container...$(NC)"
+	docker run --rm -it $(PROJECT_NAME):latest /bin/bash
 
-list-todos: ## List TODO comments in code
-	@echo "TODO items found:"
-	@grep -r "TODO\|FIXME\|XXX" $(SRC_DIRS) $(TEST_DIR) --include="*.py" || echo "No TODOs found!"
+# Performance and Profiling
+profile: ## Run performance profiling
+	@echo "$(GREEN)Running performance profiling...$(NC)"
+	$(PYTHON) -m cProfile -o profile.stats -m pytest tests/performance/
+	@echo "$(YELLOW)Profile saved to profile.stats$(NC)"
 
-count-lines: ## Count lines of code
-	@echo "Lines of code:"
-	@find $(SRC_DIRS) -name "*.py" | xargs wc -l | tail -1
-	@echo "Lines of test code:"
-	@find $(TEST_DIR) -name "*.py" | xargs wc -l | tail -1
+benchmark: ## Run benchmarks and save results
+	@echo "$(GREEN)Running benchmarks...$(NC)"
+	$(PYTEST) tests/performance/ --benchmark-only --benchmark-json=benchmark.json
+	@echo "$(YELLOW)Benchmark results saved to benchmark.json$(NC)"
 
-# Performance Commands
-profile-tests: ## Profile test execution time
-	$(PYTEST) $(TEST_DIR) --durations=10 -v
+# Examples and Demos
+examples: ## Run example notebooks/scripts
+	@echo "$(GREEN)Running examples...$(NC)"
+	$(PYTHON) examples/quickstart/basic_usage.py
+	$(PYTHON) examples/advanced/complete_pipeline.py
 
-benchmark: ## Run performance benchmarks
-	@echo "Running benchmarks..."
-	$(PYTHON) -m pytest benchmarks/ -v --benchmark-only
+demo: ## Run demo with sample data
+	@echo "$(GREEN)Running demo...$(NC)"
+	$(PYTHON) -c "from tree_models.examples import run_demo; run_demo()"
+
+# Release Management
+version: ## Show current version
+	@echo "$(GREEN)Current version: $(VERSION)$(NC)"
+
+bump-patch: ## Bump patch version (1.0.0 -> 1.0.1)
+	@echo "$(GREEN)Bumping patch version...$(NC)"
+	bump2version patch
+
+bump-minor: ## Bump minor version (1.0.0 -> 1.1.0)
+	@echo "$(GREEN)Bumping minor version...$(NC)"
+	bump2version minor
+
+bump-major: ## Bump major version (1.0.0 -> 2.0.0)
+	@echo "$(GREEN)Bumping major version...$(NC)"
+	bump2version major
 
 # Environment Management
-create-env: ## Create virtual environment
-	$(PYTHON) -m venv venv
-	@echo "Virtual environment created. Activate with: source venv/bin/activate"
-
-freeze-deps: ## Freeze current dependencies
-	$(PIP) freeze > requirements-frozen.txt
-	@echo "Dependencies frozen to requirements-frozen.txt"
-
-# Help and Info
-info: ## Show project information
-	@echo "Tree Models Project Information"
-	@echo "==============================="
-	@echo "Python version: $(shell $(PYTHON) --version)"
-	@echo "Pip version: $(shell $(PIP) --version)"
-	@echo "Project root: $(shell pwd)"
+env-info: ## Show environment information
+	@echo "$(GREEN)Environment Information:$(NC)"
+	@echo "Python: $(shell $(PYTHON) --version)"
+	@echo "Pip: $(shell $(PIP) --version)"
+	@echo "Project: $(PROJECT_NAME) v$(VERSION)"
+	@echo "Current directory: $(shell pwd)"
 	@echo "Virtual env: $(VIRTUAL_ENV)"
-	@echo "Git branch: $(shell git branch --show-current 2>/dev/null || echo 'Not a git repo')"
-	@echo "Git commit: $(shell git rev-parse --short HEAD 2>/dev/null || echo 'Not a git repo')"
 
-# Check if commands exist
-check-commands: ## Check if required commands are available
-	@echo "Checking required commands..."
-	@command -v $(PYTHON) >/dev/null 2>&1 || { echo "Python not found!"; exit 1; }
-	@command -v $(PIP) >/dev/null 2>&1 || { echo "Pip not found!"; exit 1; }
-	@command -v git >/dev/null 2>&1 || { echo "Git not found!"; exit 1; }
-	@echo "All required commands available!"
+deps-info: ## Show dependency information
+	@echo "$(GREEN)Dependency Information:$(NC)"
+	$(PIP) list --format=columns
 
-# Create directory structure
-create-dirs: ## Create necessary directories
-	mkdir -p reports logs data/raw data/processed models/saved outputs
+# CI/CD Helpers
+ci-install: ## Install dependencies for CI/CD
+	@echo "$(GREEN)Installing CI dependencies...$(NC)"
+	$(PIP) install --upgrade pip setuptools wheel
+	$(PIP) install -e ".[test,dev]"
 
-# Full setup for new developers
-full-setup: check-commands create-dirs setup-dev install-dev ## Complete setup for new developers
-	@echo ""
-	@echo "🎉 Full setup complete!"
-	@echo ""
-	@echo "Next steps:"
-	@echo "1. Activate virtual environment: source venv/bin/activate"
-	@echo "2. Run tests: make test"
-	@echo "3. Try the demo: make demo-config"
-	@echo "4. Check code quality: make check"
+ci-test: ## Run tests in CI environment
+	@echo "$(GREEN)Running CI tests...$(NC)"
+	$(PYTEST) tests/ --cov=$(PROJECT_NAME) --cov-report=xml --junitxml=junit.xml
+
+ci-lint: ## Run linting in CI environment
+	@echo "$(GREEN)Running CI linting...$(NC)"
+	flake8 $(PROJECT_NAME)/ tests/ --format=junit-xml --output-file=flake8.xml
+	mypy $(PROJECT_NAME)/ --junit-xml mypy.xml
+
+# Quick Development Commands
+quick-test: ## Quick test run (fast tests only with minimal output)
+	@$(PYTEST) tests/unit/ -q --tb=no
+
+quick-check: ## Quick code quality check
+	@echo "$(GREEN)Quick check...$(NC)"
+	@flake8 $(PROJECT_NAME)/ --count --select=E9,F63,F7,F82 --show-source --statistics
+	@$(PYTEST) tests/unit/ -q --tb=no
+	@echo "$(GREEN)✓ Quick check passed$(NC)"
+
+dev: ## Start development mode (install + quick test)
+	@echo "$(GREEN)Starting development mode...$(NC)"
+	@$(MAKE) install-dev
+	@$(MAKE) quick-check
+	@echo "$(GREEN)✓ Development environment ready$(NC)"
+
+# All-in-one commands
+full-check: ## Run complete code quality and testing suite
+	@echo "$(GREEN)Running full quality check...$(NC)"
+	@$(MAKE) format-check
+	@$(MAKE) lint
+	@$(MAKE) security
+	@$(MAKE) test-coverage
+	@echo "$(GREEN)✓ All checks passed$(NC)"
+
+release-check: ## Pre-release validation
+	@echo "$(GREEN)Running pre-release checks...$(NC)"
+	@$(MAKE) clean
+	@$(MAKE) full-check
+	@$(MAKE) build
+	@echo "$(GREEN)✓ Ready for release$(NC)"

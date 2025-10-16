@@ -1,229 +1,182 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=65.0", "wheel", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "tree-models"
 version = "1.0.0"
-description = "A comprehensive machine learning framework for tree-based models with advanced configuration management"
-readme = "README.md"
-license = {file = "LICENSE"}
 authors = [
-    {name = "Aniket Sharma", email = "aniket.sharma@example.com"}
+    {name = "Tree Models Contributors", email = "contributors@tree-models.dev"},
 ]
-maintainers = [
-    {name = "ML Team", email = "ml-team@example.com"}
-]
-keywords = [
-    "machine learning", "xgboost", "lightgbm", "catboost", 
-    "mlops", "fraud detection", "feature selection", "hyperparameter tuning"
-]
+description = "Production-ready tree-based machine learning with advanced features for data validation, preprocessing, feature engineering, model training, evaluation, and explainability."
+readme = "README.md"
+license = {text = "MIT"}
+keywords = ["machine-learning", "xgboost", "lightgbm", "catboost", "tree-models", "mlops", "feature-engineering", "model-explainability"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research", 
+    "Intended Audience :: Data Scientists",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9", 
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "pandas>=1.3.0",
-    "numpy>=1.20.0",
-    "scikit-learn>=1.0.0",
-    "scipy>=1.7.0",
-    "xgboost>=1.6.0",
-    "lightgbm>=3.3.0",
-    "catboost>=1.0.0",
-    "optuna>=3.0.0",
-    "mlflow>=2.0.0",
-    "matplotlib>=3.5.0",
-    "seaborn>=0.11.0", 
-    "shap>=0.41.0",
-    "joblib>=1.1.0",
-    "tqdm>=4.62.0",
-    "python-dateutil>=2.8.0",
-    "PyYAML>=6.0",
-    "pydantic>=1.10.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-xdist>=3.0.0",
-    "pytest-mock>=3.10.0",
-    "black>=22.0.0", 
-    "isort>=5.10.0",
-    "flake8>=4.0.0",
-    "flake8-docstrings>=1.6.0",
-    "mypy>=1.0.0",
-    "pre-commit>=2.20.0",
-    "bandit>=1.7.0",
-    "safety>=2.0.0",
-]
-database = [
-    "sqlalchemy>=1.4.0",
-    "psycopg2-binary>=2.9.0",
-    "pymongo>=4.0.0",
-]
-docs = [
-    "mkdocs>=1.4.0",
-    "mkdocs-material>=8.5.0",
-    "mkdocstrings>=0.19.0",
-    "mkdocstrings-python>=0.7.0",
-]
-all = [
-    "tree-models[dev,database,docs]"
+    "numpy>=1.21.0,<2.0.0",
+    "pandas>=1.3.0,<3.0.0", 
+    "scikit-learn>=1.0.0,<2.0.0",
+    "pydantic>=1.8.0,<3.0.0",
+    "pyyaml>=6.0,<7.0.0",
+    "scipy>=1.7.0,<2.0.0",
+    "matplotlib>=3.5.0,<4.0.0",
+    "seaborn>=0.11.0,<1.0.0",
+    "typing-extensions>=4.0.0; python_version < '3.10'",
 ]
 
 [project.urls]
-Homepage = "https://github.com/aniketsharma21/tree_models"
-Documentation = "https://tree-models.readthedocs.io/"
-Repository = "https://github.com/aniketsharma21/tree_models.git"
-"Bug Tracker" = "https://github.com/aniketsharma21/tree_models/issues"
-Changelog = "https://github.com/aniketsharma21/tree_models/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/your-username/tree-models"
+Documentation = "https://tree-models.readthedocs.io"
+Repository = "https://github.com/your-username/tree-models"
+"Bug Tracker" = "https://github.com/your-username/tree-models/issues"
+Changelog = "https://github.com/your-username/tree-models/blob/main/CHANGELOG.md"
 
-[project.scripts]
+[project.optional-dependencies]
+# Minimal installation - core functionality only
+minimal = []
+
+# Machine learning frameworks
+ml = [
+    "xgboost>=1.5.0,<3.0.0",
+    "lightgbm>=3.2.0,<5.0.0",
+    "catboost>=1.0.0,<2.0.0",
+]
+
+# MLOps and experiment tracking
+mlops = [
+    "mlflow>=1.20.0,<3.0.0",
+]
+
+# Model explainability
+explainability = [
+    "shap>=0.40.0,<1.0.0",
+]
+
+# Interactive visualization
+viz = [
+    "plotly>=5.0.0,<6.0.0",
+]
+
+# Text processing
+text = [
+    "nltk>=3.7,<4.0.0",
+]
+
+# Development dependencies
+dev = [
+    "black>=22.0.0,<25.0.0",
+    "isort>=5.10.0,<6.0.0",
+    "flake8>=5.0.0,<8.0.0",
+    "mypy>=0.950,<2.0.0",
+    "pre-commit>=2.17.0,<4.0.0",
+    "bandit>=1.7.0,<2.0.0",
+    "safety>=2.0.0,<4.0.0",
+]
+
+# Testing dependencies
+test = [
+    "pytest>=7.0.0,<9.0.0",
+    "pytest-cov>=4.0.0,<5.0.0",
+    "pytest-xdist>=2.5.0,<4.0.0",
+    "pytest-mock>=3.6.0,<4.0.0",
+    "hypothesis>=6.0.0,<7.0.0",
+    "factory-boy>=3.2.0,<4.0.0",
+    "memory-profiler>=0.60.0,<1.0.0",
+    "psutil>=5.8.0,<7.0.0",
+]
+
+# Documentation dependencies
+docs = [
+    "sphinx>=4.5.0,<8.0.0",
+    "sphinx-rtd-theme>=1.0.0,<3.0.0",
+    "nbsphinx>=0.8.0,<1.0.0",
+]
+
+# Jupyter notebook support
+jupyter = [
+    "jupyter>=1.0.0,<2.0.0",
+    "ipykernel>=6.0.0,<7.0.0",
+    "ipywidgets>=7.6.0,<9.0.0",
+]
+
+# Utilities
+utils = [
+    "click>=8.0.0,<9.0.0",
+    "rich>=12.0.0,<14.0.0",
+    "tqdm>=4.60.0,<5.0.0",
+]
+
+# File format support
+formats = [
+    "openpyxl>=3.0.0,<4.0.0",
+    "fastparquet>=0.8.0,<2.0.0",
+    "pyarrow>=8.0.0,<16.0.0",
+]
+
+# All optional dependencies (everything except minimal)
+all = [
+    "tree-models[ml,mlops,explainability,viz,text,utils,formats,jupyter]",
+]
+
+[project.entry-points."console_scripts"]
 tree-models = "tree_models.cli:main"
 
-[project.entry-points."tree_models.plugins"]
-xgboost = "tree_models.plugins.xgboost:XGBoostPlugin"
-lightgbm = "tree_models.plugins.lightgbm:LightGBMPlugin"
-catboost = "tree_models.plugins.catboost:CatBoostPlugin"
-
 [tool.setuptools]
-zip-safe = false
-include-package-data = true
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["tree_models*", "config*", "src*"]
-exclude = ["tests*", "docs*", "notebooks*"]
+packages = ["tree_models", "tree_models.models", "tree_models.explainability", "tree_models.data", "tree_models.config", "tree_models.tracking", "tree_models.utils"]
 
 [tool.setuptools.package-data]
-"config" = ["defaults/*.yaml", "*.md"]
-"tree_models" = ["py.typed"]
+tree_models = ["py.typed", "*.yaml", "*.json"]
 
-# Testing configuration
-[tool.pytest.ini_options]
-minversion = "7.0"
-addopts = [
-    "-ra", 
-    "--strict-markers",
-    "--strict-config",
-    "--cov=tree_models",
-    "--cov=config", 
-    "--cov=src",
-    "--cov-branch",
-    "--cov-report=term-missing",
-    "--cov-report=html:htmlcov",
-    "--cov-report=xml",
-    "--cov-fail-under=80"
-]
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
-    "config: marks tests related to configuration system",
-    "models: marks tests related to model training/evaluation",
-    "data: marks tests related to data processing",
-]
-filterwarnings = [
-    "error",
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-]
-
-# Coverage configuration
-[tool.coverage.run]
-source = ["tree_models", "config", "src"]
-omit = [
-    "*/tests/*",
-    "*/test_*",
-    "*/__init__.py",
-    "*/setup.py",
-    "*/conftest.py",
-    "*/notebooks/*",
-]
-parallel = true
-branch = true
-
-[tool.coverage.paths]
-source = [
-    "tree_models/",
-    "config/",
-    "src/",
-    "*/site-packages/tree_models/",
-    "*/site-packages/config/",
-    "*/site-packages/src/",
-]
-
-[tool.coverage.report]
-show_missing = true
-precision = 2
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
-
-# Code formatting
+# Black configuration
 [tool.black]
-line-length = 100
-target-version = ["py38", "py39", "py310", "py311"]
-include = "\\.pyi?$"
-extend-exclude = """
+line-length = 120
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
 /(
-    \\.eggs
-  | \\.git
-  | \\.hg
-  | \\.mypy_cache
-  | \\.tox
-  | \\.venv
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
   | _build
   | buck-out
   | build
   | dist
-  | venv
 )/
-"""
+'''
 
-# Import sorting
+# isort configuration
 [tool.isort]
 profile = "black"
-line_length = 100
-known_first_party = ["tree_models", "config", "src"]
-known_third_party = [
-    "pandas", "numpy", "sklearn", "xgboost", "lightgbm", 
-    "catboost", "optuna", "mlflow", "matplotlib", "seaborn", "shap"
-]
+line_length = 120
 multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
+split_on_trailing_comma = true
 
-# Type checking
+# MyPy configuration
 [tool.mypy]
 python_version = "3.8"
 warn_return_any = true
@@ -239,58 +192,144 @@ warn_no_return = true
 warn_unreachable = true
 strict_equality = true
 show_error_codes = true
-show_error_context = true
-pretty = true
 
 [[tool.mypy.overrides]]
 module = [
     "xgboost.*",
-    "lightgbm.*", 
+    "lightgbm.*",
     "catboost.*",
-    "optuna.*",
-    "mlflow.*",
     "shap.*",
-    "boruta.*"
+    "mlflow.*",
+    "plotly.*",
+    "nltk.*",
+    "memory_profiler.*",
 ]
 ignore_missing_imports = true
 
-# Linting
+# Pytest configuration
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=tree_models",
+    "--cov-branch",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-fail-under=80",
+]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "performance: marks tests as performance benchmarks", 
+    "requires_ml_libs: marks tests that require ML libraries (xgboost, lightgbm, etc.)",
+    "unit: marks tests as unit tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+# Coverage configuration
+[tool.coverage.run]
+source = ["tree_models"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__init__.py",
+    "*/setup.py",
+    "*/venv/*",
+    "*/.venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError", 
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true
+skip_covered = true
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# Bandit configuration
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+skips = ["B101", "B601"]
+
+# Flake8 configuration (in setup.cfg format as flake8 doesn't support pyproject.toml yet)
 [tool.flake8]
-max-line-length = 100
+max-line-length = 120
 extend-ignore = [
     "E203",  # whitespace before ':'
-    "E501",  # line too long
+    "E501",  # line too long (handled by black)
     "W503",  # line break before binary operator
+    "W504",  # line break after binary operator
 ]
 exclude = [
     ".git",
     "__pycache__",
-    "docs/",
-    "build/",
-    "dist/",
-    "*.egg-info/",
-    ".venv/",
-    ".mypy_cache/",
-    ".pytest_cache/",
+    "build",
+    "dist",
+    ".venv",
+    "venv",
+    ".eggs",
+    "*.egg-info",
 ]
 per-file-ignores = [
-    "__init__.py:F401",  # imported but unused
-    "tests/*:D100,D101,D102,D103,D104",  # missing docstrings in tests
+    "__init__.py:F401",  # ignore unused imports in __init__.py
+    "tests/*:S101",     # ignore assert usage in tests
 ]
 
-# Security linting
-[tool.bandit]
-exclude_dirs = ["tests", "build", "dist"]
-skips = ["B101", "B601"]  # Skip assert_used and shell_injection (paramiko)
+# Ruff configuration (modern alternative to flake8)
+[tool.ruff]
+target-version = "py38"
+line-length = 120
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
+]
 
-# Documentation
-[tool.mkdocs]
-site_name = "Tree Models Documentation"
-site_description = "Comprehensive ML framework for tree-based models"
-site_url = "https://tree-models.readthedocs.io/"
-repo_url = "https://github.com/aniketsharma21/tree_models"
-edit_uri = "edit/main/docs/"
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*" = ["S101"]
 
-[build]
-# Build configuration
-skip_build = false
+# Semantic versioning and changelog
+[tool.bumpversion]
+current_version = "1.0.0"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+search = "{current_version}"
+replace = "{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+
+[[tool.bumpversion.files]]
+filename = "tree_models/__init__.py"
+
+[[tool.bumpversion.files]]
+filename = "README.md"
