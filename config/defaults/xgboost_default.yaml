@@ -1,0 +1,151 @@
+# XGBoost Default Configuration
+# Optimized for binary classification with fraud detection focus
+
+# Model Configuration
+model:
+  model_type: xgboost
+  n_estimators: 300
+  max_depth: 6
+  learning_rate: 0.1
+  random_state: 42
+  early_stopping_rounds: 50
+  verbose: false
+
+  # XGBoost-specific parameters
+  subsample: 0.8
+  colsample_bytree: 0.8
+  reg_alpha: 0.1
+  reg_lambda: 1.0
+  objective: binary:logistic
+  eval_metric: auc
+
+# Data Configuration
+data:
+  # Set these paths for your specific dataset
+  train_path: null
+  test_path: null
+  output_dir: output/xgboost_experiment
+
+  # Column names
+  target_col: target
+  weight_col: sample_weight  # Set to null if no sample weights
+  id_col: null
+
+  # Data splitting
+  test_size: 0.2
+  valid_size: 0.2
+  stratify: true
+
+  # Preprocessing
+  missing_strategy: median
+  categorical_strategy: most_frequent
+  encoding_strategy: label
+  scaling_strategy: null  # XGBoost doesn't need feature scaling
+  use_knn_imputation: false
+
+# Feature Selection Configuration
+feature_selection:
+  enable_feature_selection: true
+  save_results: true
+
+  # Variance filtering (removes constant/low-variance features)
+  variance_threshold: 0.01
+
+  # RFECV (Recursive Feature Elimination with Cross-Validation)
+  rfecv_enabled: true
+  rfecv_cv_folds: 5
+  rfecv_scoring: roc_auc
+  rfecv_step: 1
+  rfecv_min_features: 5
+
+  # Boruta (All-relevant feature selection)
+  boruta_enabled: true
+  boruta_max_iter: 100
+  boruta_alpha: 0.05
+  boruta_two_step: true
+
+  # Consensus features (features selected by multiple methods)
+  min_agreement: 2
+
+# Hyperparameter Tuning Configuration
+tuning:
+  enable_tuning: true
+  n_trials: 100
+  timeout: null  # No timeout limit
+
+  # Cross-validation for tuning
+  cv_folds: 5
+  scoring: roc_auc
+
+  # Optuna configuration
+  sampler: tpe
+  pruner: median
+  n_startup_trials: 10
+  n_warmup_steps: 10
+
+  # Parallelization
+  n_jobs: 1
+
+  # MLflow integration
+  log_to_mlflow: true
+
+  # Custom search space (overrides defaults)
+  custom_search_space:
+    # Uncomment and modify to override default ranges
+    # max_depth: [3, 10]
+    # learning_rate: [0.01, 0.3]
+    # n_estimators: [100, 500]
+
+# Evaluation Configuration
+evaluation:
+  generate_plots: true
+  save_results: true
+  plot_format: png
+  plot_dpi: 300
+
+  # Primary metric for model comparison
+  primary_metric: auc_roc
+  threshold: 0.5
+
+  # Threshold optimization
+  optimize_threshold: true
+  threshold_metrics: [f1, precision, recall, youden]
+
+  # Gains analysis
+  gains_bins: 10
+
+  # Cross-validation for evaluation
+  eval_cv_folds: 5
+
+# MLflow Configuration
+mlflow:
+  tracking_uri: null  # Use default or set via environment
+  experiment_name: xgboost_fraud_detection
+  run_name: null  # Auto-generated if null
+
+  # Logging preferences
+  log_params: true
+  log_metrics: true
+  log_artifacts: true
+  log_model: true
+  log_plots: true
+
+  # System information logging
+  auto_log_system_info: true
+  log_git_commit: true
+  log_environment: true
+
+# Global Settings
+seed: 42
+verbose: true
+debug: false
+parallel_jobs: 1
+memory_limit: null
+
+# Environment Variables Override:
+# You can override any setting using environment variables:
+# - MODEL_TYPE=xgboost
+# - N_ESTIMATORS=200
+# - TRAIN_PATH=/path/to/train.csv
+# - MLFLOW_TRACKING_URI=http://localhost:5000
+# - OUTPUT_DIR=/path/to/output

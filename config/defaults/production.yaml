@@ -1,0 +1,171 @@
+# Production Configuration
+# Optimized for production deployment with robust settings
+
+# Model Configuration (Conservative settings for stability)
+model:
+  model_type: xgboost  # Override via MODEL_TYPE environment variable
+  n_estimators: 500   # More trees for better performance
+  max_depth: 5        # Conservative depth to prevent overfitting
+  learning_rate: 0.05 # Lower learning rate for better generalization
+  random_state: 42
+  early_stopping_rounds: 100
+  verbose: false      # Disable verbose output in production
+
+  # Conservative regularization
+  subsample: 0.8
+  colsample_bytree: 0.8
+  reg_alpha: 0.3      # Higher regularization
+  reg_lambda: 1.5
+  objective: binary:logistic
+  eval_metric: auc
+
+# Data Configuration
+data:
+  # Production data paths (set via environment variables)
+  train_path: /data/prod/train_data.parquet
+  test_path: /data/prod/test_data.parquet
+  output_dir: /models/production/output
+
+  # Standard column names
+  target_col: is_fraud
+  weight_col: sample_weight
+  id_col: transaction_id
+
+  # Production data splitting
+  test_size: 0.15     # Smaller test set to maximize training data
+  valid_size: 0.15
+  stratify: true
+
+  # Robust preprocessing for production
+  missing_strategy: median
+  categorical_strategy: most_frequent
+  encoding_strategy: target    # Target encoding often works well for fraud
+  scaling_strategy: null
+  use_knn_imputation: false   # Avoid KNN in production for speed
+
+# Feature Selection (Disabled for production stability)
+feature_selection:
+  enable_feature_selection: false  # Use pre-selected features in production
+  save_results: false
+
+  # If enabled, use conservative settings
+  variance_threshold: 0.001  # More conservative threshold
+  rfecv_enabled: false       # Disable time-consuming methods
+  boruta_enabled: false
+  min_agreement: 3           # Require high consensus
+
+# Hyperparameter Tuning (Disabled for production)
+tuning:
+  enable_tuning: false  # Use pre-tuned parameters in production
+  n_trials: 20         # If enabled, use fewer trials
+  timeout: 3600        # 1 hour timeout
+
+  cv_folds: 3          # Fewer folds for speed
+  scoring: roc_auc
+
+  sampler: tpe
+  pruner: median
+  n_startup_trials: 5
+  n_warmup_steps: 5
+
+  n_jobs: 1           # Conservative parallelization
+  log_to_mlflow: true
+
+# Evaluation Configuration
+evaluation:
+  generate_plots: false      # Disable plots in production
+  save_results: true
+  plot_format: png
+  plot_dpi: 150             # Lower DPI for smaller files
+
+  primary_metric: auc_roc
+  threshold: 0.5
+
+  # Threshold optimization (important for production)
+  optimize_threshold: true
+  threshold_metrics: [f1, precision, recall]  # Business-relevant metrics
+
+  gains_bins: 10
+  eval_cv_folds: 3
+
+# MLflow Configuration (Production tracking)
+mlflow:
+  tracking_uri: ${MLFLOW_TRACKING_URI}  # Must be set via environment
+  experiment_name: fraud_detection_production
+  run_name: ${MODEL_VERSION:-production_v1}
+
+  # Comprehensive logging for production
+  log_params: true
+  log_metrics: true
+  log_artifacts: true
+  log_model: true
+  log_plots: false           # Disabled for production
+
+  # Enhanced system logging
+  auto_log_system_info: true
+  log_git_commit: true
+  log_environment: true
+
+# Global Settings (Production-optimized)
+seed: 42
+verbose: false              # Minimal logging in production
+debug: false
+parallel_jobs: 2           # Conservative parallelization
+memory_limit: 8GB          # Set memory limits
+
+# Production-specific settings
+deployment:
+  model_serving:
+    timeout_seconds: 30
+    batch_size: 1000
+    max_memory_mb: 2048
+
+  monitoring:
+    enable_drift_detection: true
+    drift_threshold: 0.1
+    performance_threshold: 0.8  # Alert if AUC drops below 0.8
+
+  data_quality:
+    enable_validation: true
+    max_missing_ratio: 0.3
+    min_sample_size: 1000
+
+# Alerting Configuration
+alerts:
+  performance_degradation:
+    enabled: true
+    threshold: 0.05  # Alert if AUC drops by 5%
+
+  data_drift:
+    enabled: true
+    threshold: 0.1
+
+  prediction_distribution:
+    enabled: true
+    min_fraud_rate: 0.001
+    max_fraud_rate: 0.1
+
+# Security Settings
+security:
+  encrypt_model_artifacts: true
+  audit_predictions: true
+  data_retention_days: 90
+
+# Resource Limits
+resources:
+  max_training_time_hours: 4
+  max_memory_gb: 16
+  max_cpu_cores: 8
+
+# Environment Variables Expected:
+# Required:
+# - MLFLOW_TRACKING_URI: MLflow tracking server URL
+# - TRAIN_PATH: Path to training data
+# - TEST_PATH: Path to test data
+# 
+# Optional:
+# - MODEL_TYPE: xgboost, lightgbm, or catboost
+# - MODEL_VERSION: Version identifier for the model
+# - OUTPUT_DIR: Override output directory
+# - ENABLE_FEATURE_SELECTION: true/false
+# - ENABLE_TUNING: true/false

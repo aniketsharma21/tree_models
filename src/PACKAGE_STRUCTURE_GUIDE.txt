@@ -1,0 +1,437 @@
+"""
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                  SRC PACKAGE - COMPLETE STRUCTURE & USAGE                 ║
+║                    Professional Fraud Detection Toolkit                   ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+📦 PACKAGE RENAMED: tree_model_helper → src (Professional naming)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📂 COMPLETE PACKAGE STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+src/                                    # Main package directory
+│
+├── __init__.py                         # ✨ NEW: Main package initialization
+│   ├── Version: 1.0.0
+│   ├── Imports: models, utils, data
+│   ├── Top-level exports:
+│   │   • complete_model_analysis()
+│   │   • fraud_detection_pipeline()
+│   │   • tune_hyperparameters()
+│   │   • quick_shap_analysis()
+│   │   • convert_to_scorecard()
+│   │   • quick_robustness_test()
+│   │   • calculate_psi_simple()
+│   ├── Utilities: get_logger, timer, quick_setup
+│   └── Helpers: show_package_info(), get_version()
+│
+├── models/                             # Model development module
+│   ├── __init__.py                     # Models package initialization
+│   │   ├── Hyperparameter tuning exports
+│   │   ├── Explainability exports
+│   │   ├── Robustness exports
+│   │   ├── CommonScoringConfigs class
+│   │   ├── complete_model_analysis()
+│   │   └── fraud_detection_pipeline()
+│   │
+│   ├── tuner.py                        # Hyperparameter optimization
+│   │   ├── EnhancedOptunaHyperparameterTuner
+│   │   ├── ScoringConfig
+│   │   ├── CustomScorer
+│   │   ├── MultiModelTuner
+│   │   └── tune_hyperparameters()
+│   │
+│   ├── explain.py                      # ✨ NEW: Model explainability
+│   │   ├── ScorecardConverter (300-850 scores)
+│   │   ├── SHAPExplainer (SHAP analysis)
+│   │   ├── ReasonCodeGenerator (compliance)
+│   │   ├── PartialDependencePlotter (PD/ICE plots)
+│   │   ├── ModelExplainerSuite (complete suite)
+│   │   ├── quick_shap_analysis()
+│   │   └── convert_to_scorecard()
+│   │
+│   └── robustness.py                   # ✨ NEW: Model robustness testing
+│       ├── SeedRobustnessTester (multi-seed training)
+│       ├── SensitivityAnalyzer (feature perturbation)
+│       ├── FeatureStabilityIndex (importance correlation)
+│       ├── PopulationStabilityIndex (PSI drift detection)
+│       ├── RobustnessConfig
+│       ├── quick_robustness_test()
+│       └── calculate_psi_simple()
+│
+├── utils/                              # Utility functions
+│   ├── __init__.py                     # ✨ NEW: Utils package initialization
+│   │   ├── Logger exports
+│   │   ├── Timer exports
+│   │   ├── I/O exports
+│   │   └── quick_setup() convenience function
+│   │
+│   ├── logger.py                       # Logging utilities
+│   │   ├── get_logger()
+│   │   ├── setup_logger()
+│   │   └── set_log_level()
+│   │
+│   ├── timer.py                        # Performance timing
+│   │   ├── @timer decorator
+│   │   ├── TimerContext
+│   │   └── benchmark()
+│   │
+│   └── io_utils.py                     # File I/O operations
+│       ├── save_json(), load_json()
+│       ├── save_pickle(), load_pickle()
+│       └── ensure_dir(), list_files()
+│
+└── data/                               # Data processing module
+    ├── __init__.py                     # ✨ NEW: Data package initialization
+    │   ├── validate_data()
+    │   ├── check_data_quality()
+    │   ├── split_features_target_weights()
+    │   └── show_data_module_info()
+    │
+    ├── preprocessor.py                 # (Optional) Data preprocessing
+    │   └── DataPreprocessor class
+    │
+    └── feature_engineer.py             # (Optional) Feature engineering
+        └── FeatureEngineer class
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 WHAT EACH __init__.py DOES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣ src/__init__.py (Main Package)
+────────────────────────────────────
+Purpose: Top-level package interface
+Features:
+  • Imports all subpackages (models, utils, data)
+  • Exports most commonly used functions to top level
+  • Provides package metadata (version, author)
+  • Includes helper functions:
+    - show_package_info() - Display usage guide
+    - get_version() - Get package version
+    - get_available_models() - List supported models
+    - get_available_scorers() - List scoring functions
+  • Performs environment checks on import
+
+Key Exports:
+  • complete_model_analysis() - Full analysis pipeline
+  • fraud_detection_pipeline() - Fraud-specific workflow
+  • tune_hyperparameters() - Quick tuning
+  • quick_shap_analysis() - Rapid SHAP
+  • convert_to_scorecard() - Business scorecards
+  • quick_robustness_test() - Stability testing
+  • calculate_psi_simple() - Drift detection
+
+
+2️⃣ src/models/__init__.py (Models Subpackage)
+───────────────────────────────────────────────
+Purpose: Central hub for all modeling functionality
+Features:
+  • Imports from tuner.py, explain.py, robustness.py
+  • Combines 30+ classes/functions into one API
+  • Defines CommonScoringConfigs class with fraud presets
+  • Implements complete_model_analysis() workflow
+  • Implements fraud_detection_pipeline() workflow
+  • Exports __all__ for public API control
+
+Key Exports:
+  Tuning: EnhancedOptunaHyperparameterTuner, ScoringConfig, tune_hyperparameters
+  Explainability: ModelExplainerSuite, SHAPExplainer, ScorecardConverter
+  Robustness: SeedRobustnessTester, SensitivityAnalyzer, PSI
+  Workflows: complete_model_analysis, fraud_detection_pipeline
+  Configs: CommonScoringConfigs
+
+
+3️⃣ src/utils/__init__.py (Utils Subpackage)
+─────────────────────────────────────────────
+Purpose: Consolidate utility functions
+Features:
+  • Imports from logger.py, timer.py, io_utils.py
+  • Provides quick_setup() for rapid logger configuration
+  • Handles missing io_utils gracefully (basic functions)
+  • Includes show_available_utils() helper
+
+Key Exports:
+  Logging: get_logger, setup_logger, set_log_level
+  Timing: timer, TimerContext, benchmark
+  I/O: save_json, load_json, save_pickle, load_pickle, ensure_dir
+  Convenience: quick_setup()
+
+
+4️⃣ src/data/__init__.py (Data Subpackage)
+───────────────────────────────────────────
+Purpose: Data processing and validation
+Features:
+  • Always-available validation functions
+  • Conditional imports for preprocessor/feature_engineer
+  • Graceful handling of missing modules
+  • Includes show_data_module_info() helper
+
+Key Exports:
+  Always Available:
+    • validate_data() - Dataset validation
+    • check_data_quality() - Quality checks
+    • split_features_target_weights() - Split data
+
+  Conditional (if files exist):
+    • DataPreprocessor class
+    • FeatureEngineer class
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 IMPORT PATTERNS - HOW TO USE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pattern 1: Top-Level Imports (RECOMMENDED FOR MOST USERS)
+──────────────────────────────────────────────────────────
+# Import complete workflows
+from src import complete_model_analysis, fraud_detection_pipeline
+
+# Use in one line
+results = fraud_detection_pipeline(
+    model_class=xgb.XGBClassifier,
+    X_train=X_train, y_train=y_train,
+    X_test=X_test, y_test=y_test,
+    sample_weight_train=weights,
+    focus='recall'
+)
+
+
+Pattern 2: Module-Level Imports (FOR SPECIFIC FEATURES)
+────────────────────────────────────────────────────────
+# Import from specific modules
+from src.models import (
+    EnhancedOptunaHyperparameterTuner,
+    ModelExplainerSuite,
+    SeedRobustnessTester
+)
+
+from src.utils import get_logger, timer
+
+from src.data import validate_data, split_features_target_weights
+
+
+Pattern 3: Subpackage Imports (FOR EXPLORATORY WORK)
+─────────────────────────────────────────────────────
+# Import entire subpackage
+from src import models, utils, data
+
+# Use with dot notation
+tuner = models.EnhancedOptunaHyperparameterTuner(...)
+logger = utils.get_logger(__name__)
+validation = data.validate_data(df)
+
+
+Pattern 4: Pre-Configured Settings (FOR FRAUD DETECTION)
+─────────────────────────────────────────────────────────
+from src.models import CommonScoringConfigs
+
+# Get fraud-optimized configurations
+recall_config = CommonScoringConfigs.fraud_detection_recall()
+precision_config = CommonScoringConfigs.fraud_detection_precision()
+balanced_config = CommonScoringConfigs.fraud_detection_balanced()
+pr_auc_config = CommonScoringConfigs.fraud_detection_pr_auc()
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 COMPLETE USAGE EXAMPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Example 1: ONE-LINE COMPLETE ANALYSIS
+──────────────────────────────────────
+import pandas as pd
+import xgboost as xgb
+from src import complete_model_analysis
+
+# Load your data
+X_train, y_train, weights_train = load_fraud_data('train')
+X_test, y_test, weights_test = load_fraud_data('test')
+
+# Run EVERYTHING in one call
+results = complete_model_analysis(
+    model_class=xgb.XGBClassifier,
+    model_params={'objective': 'binary:logistic'},
+    X_train=X_train, y_train=y_train,
+    X_test=X_test, y_test=y_test,
+    sample_weight_train=weights_train,
+    sample_weight_test=weights_test,
+    output_dir='fraud_analysis_2025'
+)
+
+# Results include:
+# - Hyperparameter tuning results
+# - SHAP explainability reports
+# - Robustness testing summary
+# - All visualizations and exports
+
+
+Example 2: FRAUD DETECTION SPECIALIZED PIPELINE
+────────────────────────────────────────────────
+from src import fraud_detection_pipeline
+
+# Optimized for fraud detection with focus selection
+results = fraud_detection_pipeline(
+    model_class=xgb.XGBClassifier,
+    X_train=X_train, y_train=y_train,
+    X_test=X_test, y_test=y_test,
+    sample_weight_train=weights_train,
+    sample_weight_test=weights_test,
+    focus='recall',  # Maximize fraud detection
+    output_dir='fraud_pipeline_output'
+)
+
+
+Example 3: STEP-BY-STEP WORKFLOW
+─────────────────────────────────
+from src.models import (
+    tune_hyperparameters,
+    quick_shap_analysis,
+    convert_to_scorecard,
+    calculate_psi_simple
+)
+
+# Step 1: Tune hyperparameters
+best_params, best_score = tune_hyperparameters(
+    'xgboost', X_train, y_train,
+    scoring_function='recall',
+    additional_metrics=['precision', 'f1'],
+    sample_weight=weights_train,
+    n_trials=100
+)
+
+# Step 2: Train with best params
+model = xgb.XGBClassifier(**best_params)
+model.fit(X_train, y_train, sample_weight=weights_train)
+
+# Step 3: SHAP explainability
+shap_results = quick_shap_analysis(
+    model, X_test, 
+    sample_weight=weights_test,
+    save_dir='shap_output'
+)
+
+# Step 4: Convert to scorecards
+y_pred_proba = model.predict_proba(X_test)[:, 1]
+scores, converter = convert_to_scorecard(y_pred_proba, sample_weight=weights_test)
+
+# Step 5: Check for data drift
+psi_results = calculate_psi_simple(X_train, X_test)
+
+
+Example 4: USING PRE-CONFIGURED SETTINGS
+─────────────────────────────────────────
+from src.models import (
+    EnhancedOptunaHyperparameterTuner,
+    CommonScoringConfigs
+)
+
+# Get pre-configured fraud detection settings
+config = CommonScoringConfigs.fraud_detection_pr_auc()
+
+# Create tuner with config
+tuner = EnhancedOptunaHyperparameterTuner(
+    model_type='xgboost',
+    n_trials=100,
+    scoring_config=config
+)
+
+# Optimize
+best_params, best_score = tuner.optimize(
+    X_train, y_train, 
+    sample_weight=weights_train
+)
+
+
+Example 5: UTILITIES USAGE
+───────────────────────────
+from src.utils import get_logger, timer, quick_setup
+from src.data import validate_data, check_data_quality
+
+# Quick logger setup
+logger = quick_setup(log_level='DEBUG', log_file='fraud_model.log')
+
+# Use timer decorator
+@timer
+def train_model(X, y, weights):
+    model = xgb.XGBClassifier()
+    model.fit(X, y, sample_weight=weights)
+    return model
+
+# Validate data
+validation = validate_data(
+    df, 
+    target_column='is_fraud',
+    sample_weight_column='weight'
+)
+logger.info(f"Dataset has {validation['n_rows']} rows")
+
+# Check quality
+issues = check_data_quality(df, threshold_missing=0.3)
+logger.warning(f"High missing features: {issues['high_missing']}")
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 BENEFITS OF THIS STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ PROFESSIONAL NAMING:
+   • 'src' is industry standard for source code
+   • Clean, recognizable package structure
+
+✅ CLEAN IMPORTS:
+   • Users don't need to know file structure
+   • Top-level imports for common operations
+   • Module-level imports for specific features
+
+✅ COMPREHENSIVE __init__.py FILES:
+   • All subpackages have complete initialization
+   • Exports defined with __all__
+   • Helper functions included
+   • Graceful handling of missing modules
+
+✅ COMPLETE WORKFLOWS:
+   • complete_model_analysis() - Does everything
+   • fraud_detection_pipeline() - Specialized for fraud
+   • Quick functions for rapid prototyping
+
+✅ PRE-CONFIGURED SETTINGS:
+   • CommonScoringConfigs for fraud detection
+   • No need to remember scoring functions
+   • Production-ready configurations
+
+✅ SAMPLE WEIGHTS EVERYWHERE:
+   • Full integration throughout all modules
+   • Perfect for imbalanced fraud detection
+   • Consistent API across all functions
+
+✅ EXTENSIBLE:
+   • Easy to add new modules
+   • Clear structure for new features
+   • Maintains backwards compatibility
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 KEY TAKEAWAYS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Package renamed to 'src' for professional standards
+2. All __init__.py files regenerated with comprehensive exports
+3. Top-level imports available for most common operations
+4. Complete workflows in single function calls
+5. Pre-configured settings for fraud detection
+6. Sample weights integrated throughout
+7. Graceful handling of optional modules
+8. Helper functions for package exploration
+
+✨ YOUR PACKAGE IS NOW PRODUCTION-READY! ✨
+
+Start using with:
+    from src import fraud_detection_pipeline
+
+    results = fraud_detection_pipeline(...)
+
+Or explore with:
+    from src import show_package_info
+    show_package_info()
+"""
