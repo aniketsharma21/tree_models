@@ -375,6 +375,7 @@ class ReasonCodeGenerator(BaseReasonCodeGenerator):
         
         if stats['is_numeric'] and pd.notna(feature_value):
             try:
+                z_score = 0.0
                 # Calculate approximate percentile
                 if stats['std'] > 0:
                     z_score = (feature_value - stats['mean']) / stats['std']
@@ -397,7 +398,7 @@ class ReasonCodeGenerator(BaseReasonCodeGenerator):
                         'comparison_to_mean': 'above' if feature_value > stats['mean'] else 'below',
                         'comparison_to_median': 'above' if feature_value > stats['median'] else 'below',
                         'is_outlier': abs(z_score) > 2,
-                        'z_score': float(z_score) if stats['std'] > 0 else 0.0
+                        'z_score': float(z_score)
                     }
                 }
             except Exception as e:
@@ -764,7 +765,7 @@ class ReasonCodeGenerator(BaseReasonCodeGenerator):
             html += f'<h3>Instance {code["instance_index"]}</h3>'
             
             for reason in code['reasons']:
-                reason_class = reason.get('reason_type', 'neutral').lower()
+                reason_class = reason.get('reason_type', ReasonCodeType.NEUTRAL).value.lower()
                 html += f'<div class="reason {reason_class}">• {reason["text"]}</div>'
             
             if code.get('improvement_suggestions'):

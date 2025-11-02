@@ -366,7 +366,10 @@ def benchmark(
     max_time = max(times)
     
     # Calculate standard deviation
-    variance = sum((t - avg_time) ** 2 for t in times) / len(times)
+    if len(times) > 1:
+        variance = sum((t - avg_time) ** 2 for t in times) / (len(times) - 1)
+    else:
+        variance = 0.0
     std_dev = variance ** 0.5
     
     results = {
@@ -441,7 +444,17 @@ def monitor_memory(name: str, log_result: bool = True):
     """
     if not PSUTIL_AVAILABLE:
         logger.warning("Memory monitoring requires psutil package")
-        yield {'memory_available': False}
+        yield {
+            'memory_available': False,
+            'initial_rss': 0,
+            'initial_vms': 0,
+            'peak_rss': 0,
+            'peak_vms': 0,
+            'final_rss': 0,
+            'final_vms': 0,
+            'rss_delta': 0,
+            'vms_delta': 0
+        }
         return
     
     process = psutil.Process()

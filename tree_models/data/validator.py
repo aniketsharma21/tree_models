@@ -39,7 +39,7 @@ warnings.filterwarnings('ignore')
 # Optional dependencies with fallbacks
 try:
     from scipy import stats
-    from scipy.stats import jarque_bera, shapiro, kstest, chi2_contingency
+    from scipy.stats import jarque_bera, shapiro, kstest, chi2_contingency, ks_2samp
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
@@ -1370,7 +1370,7 @@ class DataValidator:
                 return None
             
             plt.figure(figsize=(10, 8))
-            mask = np.triu(np.ones_like(corr_df.corr(), dtype=bool))
+            mask = np.triu(np.ones_like(corr_df, dtype=bool))
             
             sns.heatmap(corr_df, mask=mask, annot=True, cmap='coolwarm', center=0,
                        square=True, linewidths=0.5, cbar_kws={"shrink": 0.5}, fmt='.2f')

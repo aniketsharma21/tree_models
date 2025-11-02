@@ -980,8 +980,8 @@ class AdvancedDataPreprocessor:
                     X_imputed[column] = imputer.transform(X_imputed[[column]]).ravel()
             
             # Add missing indicators if they were created during fit
-            if config.create_missing_indicator:
-                indicator_name = f"{column}_was_missing"
+            indicator_name = f"{column}_was_missing"
+            if indicator_name in self.feature_names_out_:
                 if indicator_name not in X_imputed.columns:
                     X_imputed[indicator_name] = X[column].isnull().astype(int)
         

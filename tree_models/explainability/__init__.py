@@ -22,7 +22,7 @@ from .reason_codes import ReasonCodeGenerator
 from .partial_dependence import PartialDependencePlotter
 
 # Base classes
-from .base import BaseExplainer, ExplanationResult
+from .base import BaseExplainer
 
 __all__ = [
     # Core implementations
@@ -36,6 +36,5 @@ __all__ = [
     'convert_to_scorecard',
     
     # Base classes and results
-    'BaseExplainer',
-    'ExplanationResult'
+    'BaseExplainer'
 ]

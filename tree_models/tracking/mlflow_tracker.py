@@ -17,6 +17,7 @@ import tempfile
 import json
 import os
 import subprocess
+import getpass
 from pathlib import Path
 from typing import Any, Dict, Optional, Union, List, Tuple
 import pandas as pd
@@ -162,14 +163,17 @@ class MLflowTracker:
             
             logger.info(f"Created new experiment: {self.experiment_name} (ID: {self.experiment_id})")
 
-        except Exception:
-            # Experiment might already exist
-            experiment = mlflow.get_experiment_by_name(self.experiment_name)
-            if experiment and experiment.lifecycle_stage != "deleted":
-                self.experiment_id = experiment.experiment_id
-                logger.info(f"Using existing experiment: {self.experiment_name} (ID: {self.experiment_id})")
+        except mlflow.exceptions.MlflowException as e:
+            if "already exists" in str(e):
+                # Experiment might already exist
+                experiment = mlflow.get_experiment_by_name(self.experiment_name)
+                if experiment and experiment.lifecycle_stage != "deleted":
+                    self.experiment_id = experiment.experiment_id
+                    logger.info(f"Using existing experiment: {self.experiment_name} (ID: {self.experiment_id})")
+                else:
+                    raise TrackingError(f"Could not create or access experiment: {self.experiment_name}")
             else:
-                raise TrackingError(f"Could not create or access experiment: {self.experiment_name}")
+                raise e
 
     def _set_experiment_tags(self, tags: Dict[str, str]) -> None:
         """Set tags at the experiment level."""
@@ -235,12 +239,12 @@ class MLflowTracker:
                 self.set_tags({"run_status": "COMPLETED"})
 
             mlflow.end_run()
-            
             logger.info(f"✅ Ended MLflow run: {self.run_id}")
-            logger.info(f"   Duration: {duration:.2f}s")
-            logger.info(f"   Logged: {self._logged_params_count} params, "
-                       f"{self._logged_metrics_count} metrics, "
-                       f"{self._logged_artifacts_count} artifacts")
+            if self._start_time:
+                logger.info(f"   Duration: {duration:.2f}s")
+                logger.info(f"   Logged: {self._logged_params_count} params, "
+                           f"{self._logged_metrics_count} metrics, "
+                           f"{self._logged_artifacts_count} artifacts")
 
         except Exception as e:
             logger.error(f"Error ending MLflow run: {e}")
@@ -284,7 +288,10 @@ class MLflowTracker:
         tags['platform'] = platform.system()
         tags['start_time'] = self._start_time.isoformat()
         tags['environment'] = os.environ.get("ENVIRONMENT", "development")
-        tags['user'] = os.environ.get("USER", "unknown")
+        try:
+            tags['user'] = getpass.getuser()
+        except Exception:
+            tags['user'] = "unknown"
         
         # Git information
         try:

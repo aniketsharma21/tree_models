@@ -45,7 +45,8 @@ class TreeModelsFormatter(logging.Formatter):
             Formatted log string
         """
         # Base format
-        timestamp = datetime.fromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+        timestamp = datetime.fromtimestamp(record.created).strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = f"{timestamp}.{record.msecs:03d}"
         level = record.levelname
         module = record.name
         message = record.getMessage()
@@ -231,7 +232,7 @@ class TreeModelsLogger:
             if name == '__main__':
                 name = 'tree_models.main'
             else:
-                name = f'tree_models.{name.split(".")[-1]}'
+                name = f'tree_models.{name}'
         
         # Get or create logger
         if name not in cls._loggers:

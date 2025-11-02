@@ -538,17 +538,15 @@ class PartialDependencePlotter(BaseVisualizer):
         fig, axes = plt.subplots(n_rows, n_cols, figsize=(5*n_cols, 4*n_rows))
         if n_features == 1:
             axes = [axes]
-        elif n_rows == 1:
-            axes = axes.reshape(1, -1)
+        
+        axes = np.array(axes).flatten() # Flatten the axes array
         
         plot_idx = 0
         for feature_name, result in pd_results.items():
             if 'error' in result:
                 continue
                 
-            row = plot_idx // n_cols
-            col = plot_idx % n_cols
-            ax = axes[row, col] if n_rows > 1 else axes[col]
+            ax = axes[plot_idx] # Use 1D indexing
             
             try:
                 grid_values = result['grid_values']
@@ -572,12 +570,7 @@ class PartialDependencePlotter(BaseVisualizer):
         
         # Remove empty subplots
         for i in range(plot_idx, n_rows * n_cols):
-            row = i // n_cols
-            col = i % n_cols
-            if n_rows > 1:
-                fig.delaxes(axes[row, col])
-            else:
-                fig.delaxes(axes[col])
+            fig.delaxes(axes[i])
         
         plt.tight_layout()
         return fig
@@ -585,21 +578,23 @@ class PartialDependencePlotter(BaseVisualizer):
     def _create_interactive_pd_plots(self, pd_results: Dict[str, Any]) -> Any:
         """Create interactive Plotly PD plots."""
         
-        n_features = len([r for r in pd_results.values() if 'grid_values' in r])
+        valid_results = {k: v for k, v in pd_results.items() if 'grid_values' in v}
+        n_features = len(valid_results)
         
+        if n_features == 0:
+            logger.warning("No valid PD results to plot interactively.")
+            return go.Figure()
+
         # Create subplots
         fig = make_subplots(
             rows=(n_features + 2) // 3,
             cols=min(3, n_features),
-            subplot_titles=list(pd_results.keys()),
+            subplot_titles=list(valid_results.keys()),
             vertical_spacing=0.1
         )
         
         plot_idx = 0
-        for feature_name, result in pd_results.items():
-            if 'error' in result:
-                continue
-                
+        for feature_name, result in valid_results.items():
             row = plot_idx // 3 + 1
             col = plot_idx % 3 + 1
             

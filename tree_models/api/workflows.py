@@ -178,14 +178,15 @@ def fraud_detection_pipeline(
         
         # Precision-Recall curve analysis
         precision, recall, pr_thresholds = precision_recall_curve(y_test, y_pred_proba)
-        
+
         # Find optimal threshold for different objectives
-        f1_scores = 2 * (precision * recall) / (precision + recall + 1e-8)
+        # The last precision and recall values are 1. and 0. with no threshold
+        f1_scores = 2 * (precision[:-1] * recall[:-1]) / (precision[:-1] + recall[:-1] + 1e-8)
         optimal_f1_idx = np.argmax(f1_scores)
-        
+
         results['fraud_analysis']['optimal_thresholds'] = {
             'f1_score': {
-                'threshold': float(pr_thresholds[optimal_f1_idx]) if optimal_f1_idx < len(pr_thresholds) else 0.5,
+                'threshold': float(pr_thresholds[optimal_f1_idx]),
                 'precision': float(precision[optimal_f1_idx]),
                 'recall': float(recall[optimal_f1_idx]),
                 'f1': float(f1_scores[optimal_f1_idx])

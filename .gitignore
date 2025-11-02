@@ -4,3 +4,5 @@ __pycache__/
 .env
 .idea/
 outputs/
+
+tree_models.egg-info

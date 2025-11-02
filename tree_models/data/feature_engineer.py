@@ -686,6 +686,8 @@ class FeatureEngineer:
             logger.warning("No numeric columns available for polynomial features")
             return results
         
+        self.feature_names_ = numeric_cols.tolist()
+        
         try:
             # Create polynomial features
             if config.create_polynomial_features:

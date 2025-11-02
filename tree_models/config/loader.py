@@ -22,7 +22,7 @@ from .model_config import (
     ModelConfig, XGBoostConfig, LightGBMConfig, CatBoostConfig,
     ExperimentConfig, DEFAULT_CONFIGS
 )
-from .data_config import DataConfig, FeatureConfig, ProcessingConfig
+from .data_config import DataConfig, FeatureConfig, PreprocessingConfig
 from ..utils.logger import get_logger
 from ..utils.timer import timer, timed_operation
 from ..utils.exceptions import (
@@ -503,7 +503,7 @@ class ConfigLoader:
 
         # Create data configuration object
         data_config_dict = config_dict.get('data', {})
-        data_config = DataConfig(**data_config_dict)
+        data_config = DataConfig.from_dict(data_config_dict)
 
         # Create experiment configuration
         experiment_config = ExperimentConfig(

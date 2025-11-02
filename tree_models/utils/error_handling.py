@@ -52,14 +52,14 @@ class ErrorContext:
 
 
 class ErrorHandler:
-    """Centralized error handling with context and recovery.
+    """Centralized error handling with context and recovery. 
     
     Provides consistent error handling patterns with structured
     context information and recovery strategies.
     """
     
     def __init__(self, component_name: str) -> None:
-        """Initialize error handler for a specific component.
+        """Initialize error handler for a specific component. 
         
         Args:
             component_name: Name of the component using this handler
@@ -122,7 +122,7 @@ class ErrorHandler:
         validation_target: str,
         user_data: Optional[Dict[str, Any]] = None
     ) -> ConfigurationError:
-        """Handle validation errors with context.
+        """Handle validation errors with context. 
         
         Args:
             error_message: Description of validation failure
@@ -155,7 +155,7 @@ class ErrorHandler:
         error_message: str,
         data_info: Optional[Dict[str, Any]] = None
     ) -> ConfigurationError:
-        """Handle data-related errors with context.
+        """Handle data-related errors with context. 
         
         Args:
             error_message: Description of data error
@@ -193,7 +193,7 @@ class ErrorHandler:
         exception: Exception, 
         context: ErrorContext
     ) -> None:
-        """Log detailed error information.
+        """Log detailed error information. 
         
         Args:
             exception: The caught exception
@@ -214,7 +214,7 @@ class ErrorHandler:
         original_exception: Exception, 
         operation_name: str
     ) -> Type[Exception]:
-        """Determine appropriate exception type based on operation and original exception.
+        """Determine appropriate exception type based on operation and original exception. 
         
         Args:
             original_exception: The original exception
@@ -224,23 +224,31 @@ class ErrorHandler:
             Appropriate exception class
         """
         # Map operation patterns to exception types
-        if 'train' in operation_name.lower():
-            return ModelTrainingError
-        elif 'evaluat' in operation_name.lower() or 'predict' in operation_name.lower():
-            return ModelEvaluationError
-        elif 'validat' in operation_name.lower() or 'config' in operation_name.lower():
-            return ConfigurationError
-        else:
-            # Default to TreeModelsError for unknown operations
-            return TreeModelsError
-    
+        OPERATION_TO_EXCEPTION_MAP = {
+            'train': ModelTrainingError,
+            'tune': ModelTrainingError,
+            'fit': ModelTrainingError,
+            'evaluat': ModelEvaluationError,
+            'predict': ModelEvaluationError,
+            'score': ModelEvaluationError,
+            'validat': ConfigurationError,
+            'config': ConfigurationError,
+            'load': ConfigurationError,
+        }
+
+        operation_lower = operation_name.lower()
+        for prefix, exception_type in OPERATION_TO_EXCEPTION_MAP.items():
+            if operation_lower.startswith(prefix):
+                return exception_type
+        
+        return TreeModelsError    
     def _create_enhanced_exception(
         self,
         original_exception: Exception,
         exception_class: Type[Exception],
         context: ErrorContext
     ) -> Exception:
-        """Create enhanced exception with context information.
+        """Create enhanced exception with context information. 
         
         Args:
             original_exception: The original exception
@@ -276,7 +284,7 @@ def model_operation_context(
     component_name: str = "ModelOperation",
     **kwargs: Any
 ):
-    """Context manager for model operations.
+    """Context manager for model operations. 
     
     Args:
         operation_name: Name of the model operation
@@ -296,7 +304,7 @@ def data_operation_context(
     component_name: str = "DataOperation", 
     **kwargs: Any
 ):
-    """Context manager for data operations.
+    """Context manager for data operations. 
     
     Args:
         operation_name: Name of the data operation
@@ -318,7 +326,7 @@ def config_operation_context(
     component_name: str = "Configuration",
     **kwargs: Any
 ):
-    """Context manager for configuration operations.
+    """Context manager for configuration operations. 
     
     Args:
         operation_name: Name of the configuration operation
@@ -343,7 +351,7 @@ def handle_errors(
     component_name: Optional[str] = None,
     recovery_suggestions: Optional[list] = None
 ):
-    """Decorator for automatic error handling.
+    """Decorator for automatic error handling. 
     
     Args:
         operation_name: Name of the operation (defaults to function name)
@@ -363,10 +371,12 @@ def handle_errors(
             
             # Determine component name
             comp_name = component_name
-            if comp_name is None and args and hasattr(args[0], '__class__'):
-                comp_name = args[0].__class__.__name__
+            if comp_name is None:
+                qualname_parts = func.__qualname__.split('.')
+                if len(qualname_parts) > 1:
+                    comp_name = qualname_parts[-2]
             comp_name = comp_name or "UnknownComponent"
-            
+
             # Create error handler
             handler = ErrorHandler(comp_name)
             
