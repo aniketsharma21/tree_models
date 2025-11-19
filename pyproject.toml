@@ -228,6 +228,7 @@ markers = [
 ]
 filterwarnings = [
     "error",
+    "ignore::coverage.exceptions.CoverageWarning",
     "ignore::UserWarning",
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",

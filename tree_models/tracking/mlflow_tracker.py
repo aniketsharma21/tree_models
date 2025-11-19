@@ -11,8 +11,14 @@ This module provides comprehensive MLflow integration with:
 - Integration with tree_models configuration system
 """
 
-import mlflow
-import mlflow.sklearn
+try:
+    import mlflow
+    import mlflow.sklearn
+    MLFLOW_AVAILABLE = True
+except ImportError:
+    mlflow = None
+    MLFLOW_AVAILABLE = False
+
 import tempfile
 import json
 import os
@@ -104,6 +110,9 @@ class MLflowTracker:
         Raises:
             TrackingError: If tracker initialization fails
         """
+        if not MLFLOW_AVAILABLE:
+            raise TrackingError("MLflow is not available. Install mlflow to use MLflowTracker.")
+
         validate_parameter("experiment_name", experiment_name, min_length=1)
         
         self.experiment_name = experiment_name
@@ -115,7 +124,7 @@ class MLflowTracker:
         self.run_id: Optional[str] = None
         self.experiment_id: Optional[str] = None
         self._start_time: Optional[datetime] = None
-        self._active_run: Optional[mlflow.ActiveRun] = None
+        self._active_run: Any = None
         
         # Performance tracking
         self._logged_metrics_count = 0
@@ -948,7 +957,7 @@ class ExperimentTracker:
         metric_name: str, 
         ascending: bool = False,
         filter_string: Optional[str] = None
-    ) -> Optional[mlflow.entities.Run]:
+    ) -> Optional[Any]:
         """Get the best run based on a metric.
 
         Args:

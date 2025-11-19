@@ -69,6 +69,18 @@ class DataValidationError(TreeModelsError):
     pass
 
 
+class DataProcessingError(TreeModelsError):
+    """Raised when data processing fails.
+    
+    This exception is raised for issues with:
+    - Data transformation failures
+    - Encoding errors
+    - Scaling/normalization issues
+    - Pipeline execution failures
+    """
+    pass
+
+
 class ModelTrainingError(TreeModelsError):
     """Raised when model training fails.
     
@@ -101,6 +113,18 @@ class ExplainabilityError(TreeModelsError):
     - Feature importance calculation
     - Partial dependence plots
     - Reason code generation
+    """
+    pass
+
+
+class FeatureEngineeringError(TreeModelsError):
+    """Raised when feature engineering fails.
+    
+    This exception is raised for issues with:
+    - Feature creation/transformation
+    - Mathematical operations
+    - Domain-specific feature generation
+    - Lag/window feature computation
     """
     pass
 

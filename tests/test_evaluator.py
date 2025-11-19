@@ -251,7 +251,7 @@ class TestModelEvaluator:
             'probabilities': np.random.uniform(0, 1, len(y))
         }
         
-        config = EvaluationConfig(bootstrap_samples=10)  # Small number for testing
+        config = EvaluationConfig(bootstrap_samples=100)  # Small number for testing
         
         ci = evaluator._compute_confidence_intervals(y, predictions, sample_weight, config)
         

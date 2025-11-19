@@ -12,37 +12,24 @@ from tree_models.utils.logger import (
     set_log_level,
     temporary_log_level,
     PerformanceLoggerAdapter,
-    TreeModelsLogger
+    TreeModelsLogger,
 )
 
 
 @pytest.fixture(autouse=True)
 def reset_logging():
     """Reset logging configuration before and after each test."""
-    # Reset internal state of TreeModelsLogger
+    logging.getLogger("tree_models").handlers.clear()
+    logging.getLogger("tree_models").filters.clear()
+    logging.getLogger("tree_models").setLevel(logging.NOTSET)
     TreeModelsLogger._configured = False
     TreeModelsLogger._loggers = {}
-    
-    # Get the root logger for the package
-    root_logger = logging.getLogger('tree_models')
-    
-    # Remove all handlers
-    root_logger.handlers.clear()
-    
-    # Remove all filters
-    root_logger.filters.clear()
-    
-    # Set level to a default
-    root_logger.setLevel(logging.NOTSET)
-    
     yield
-    
-    # Repeat cleanup after test
+    logging.getLogger("tree_models").handlers.clear()
+    logging.getLogger("tree_models").filters.clear()
+    logging.getLogger("tree_models").setLevel(logging.NOTSET)
     TreeModelsLogger._configured = False
     TreeModelsLogger._loggers = {}
-    root_logger.handlers.clear()
-    root_logger.filters.clear()
-    root_logger.setLevel(logging.NOTSET)
 
 
 class TestLogger:
@@ -62,14 +49,13 @@ class TestLogger:
     def test_configure_logging_level(self):
         """Test that configure_logging sets the logging level."""
         configure_logging(level="DEBUG")
-        logger = get_logger(__name__)
-        assert logger.level == logging.DEBUG
+        assert logging.getLogger("tree_models").level == logging.DEBUG
 
-    def test_configure_logging_file(self, temporary_directory: Path):
+    def test_configure_logging_file(self, tmp_path: Path):
         """Test that configure_logging sets up a file handler."""
-        log_file = temporary_directory / "test.log"
+        log_file = tmp_path / "test.log"
         configure_logging(log_file=log_file)
-        
+
         logger = get_logger(__name__)
         logger.warning("This is a test.")
 
@@ -81,71 +67,48 @@ class TestLogger:
     def test_temporary_log_level(self):
         """Test the temporary_log_level context manager."""
         configure_logging(level="INFO")
-        logger = get_logger(__name__)
-        
-        assert logging.getLogger('tree_models').level == logging.INFO
+        assert logging.getLogger("tree_models").level == logging.INFO
 
         with temporary_log_level("DEBUG"):
-            assert logging.getLogger('tree_models').level == logging.DEBUG
-        
-        assert logging.getLogger('tree_models').level == logging.INFO
+            assert logging.getLogger("tree_models").level == logging.DEBUG
+
+        assert logging.getLogger("tree_models").level == logging.INFO
 
     def test_set_log_level(self):
         """Test that set_log_level changes the logging level."""
         configure_logging(level="INFO")
-        logger = get_logger(__name__)
-        
-        assert logging.getLogger('tree_models').level == logging.INFO
-        
+        assert logging.getLogger("tree_models").level == logging.INFO
+
         set_log_level("WARNING")
-        assert logging.getLogger('tree_models').level == logging.WARNING
+        assert logging.getLogger("tree_models").level == logging.WARNING
 
-    def test_log_format(self):
+    def test_log_format(self, caplog):
         """Test that the log format is correct."""
-        log_stream = io.StringIO()
-        
-        # Configure logger to use a stream handler
-        TreeModelsLogger.configure(level="INFO")
-        root_logger = logging.getLogger('tree_models')
-        
-        # Remove existing handlers and add a stream handler
-        root_logger.handlers.clear()
-        handler = logging.StreamHandler(log_stream)
-        handler.setFormatter(root_logger.handlers[0].formatter if root_logger.handlers else logging.Formatter())
-        root_logger.addHandler(handler)
-
+        configure_logging(level="INFO")
         logger = get_logger(__name__)
         logger.info("Test message")
-        
-        log_output = log_stream.getvalue()
-        
-        # Example format: [2023-10-27 10:00:00.123] INFO     | tree_models.tests.test_utils_logger | Test message
-        assert "INFO" in log_output
-        assert "tree_models.tests.test_utils_logger" in log_output
-        assert "Test message" in log_output
 
-    def test_performance_logger_adapter(self):
+        assert len(caplog.records) == 1
+        record = caplog.records[0]
+        assert record.levelname == "INFO"
+        assert record.name == f"tree_models.{__name__}"
+        assert record.getMessage() == "Test message"
+
+    def test_performance_logger_adapter(self, caplog):
         """Test the PerformanceLoggerAdapter."""
-        log_stream = io.StringIO()
-        
-        # Configure logger to use a stream handler
-        TreeModelsLogger.configure(level="DEBUG")
-        root_logger = logging.getLogger('tree_models')
-        root_logger.handlers.clear()
-        handler = logging.StreamHandler(log_stream)
-        handler.setFormatter(root_logger.handlers[0].formatter if root_logger.handlers else logging.Formatter())
-        root_logger.addHandler(handler)
-
+        configure_logging(level="DEBUG")
         perf_logger = get_logger(__name__, with_performance=True)
-        
-        perf_logger.start_timer("my_timer")
-        perf_logger.stop_timer("my_timer")
-        
-        log_output = log_stream.getvalue()
-        
-        assert "Timer 'my_timer' started" in log_output
-        assert "Timer 'my_timer' completed" in log_output
-        assert "Duration" in log_output
+
+        with caplog.at_level(logging.DEBUG):
+            perf_logger.start_timer("my_timer")
+            perf_logger.stop_timer("my_timer")
+
+        assert len(caplog.records) == 2
+        start_record, stop_record = caplog.records
+        assert "Timer 'my_timer' started" in start_record.getMessage()
+        assert "Timer 'my_timer' completed" in stop_record.getMessage()
+        assert "Duration:" in stop_record.getMessage()
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

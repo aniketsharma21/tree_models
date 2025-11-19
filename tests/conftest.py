@@ -103,7 +103,7 @@ def sample_mixed_data():
     
     # Add some missing values
     missing_indices = np.random.choice(n_samples, size=50, replace=False)
-    df.loc[missing_indices, 'income'] = np.nan
+    df.loc[list(missing_indices), 'income'] = np.nan
     
     return df
 

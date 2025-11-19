@@ -4,5 +4,7 @@ __pycache__/
 .env
 .idea/
 outputs/
-
+.vscode
 tree_models.egg-info
+.test_results.txt
+.coverage
