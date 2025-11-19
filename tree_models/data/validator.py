@@ -14,7 +14,7 @@ This module provides comprehensive data validation capabilities with:
 
 import json
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -92,6 +92,10 @@ class ValidationConfig:
     generate_report: bool = True
     include_visualizations: bool = True
     save_plots: bool = False
+    # Sampling controls for very large datasets
+    max_rows_limit: Optional[int] = None
+    sampling_strategy: str = "random"  # 'random' or 'head'
+    expensive_checks: bool = True
 
     def __post_init__(self) -> None:
         """Validate configuration parameters."""
@@ -146,6 +150,10 @@ class ValidationResults:
 
     # Validation config used
     config: Optional[ValidationConfig] = None
+    # Sampling metadata
+    was_sampled: bool = False
+    sampled_from_n: Optional[int] = None
+    sampled_n: Optional[int] = None
 
 
 class DataValidator:
@@ -228,6 +236,31 @@ class DataValidator:
         if config is None:
             config = ValidationConfig()
 
+        # Handle sampling for very large datasets to avoid expensive checks
+        data_to_use = data
+        effective_config = config
+
+        if config.max_rows_limit is not None and len(data) > config.max_rows_limit:
+            logger.info(
+                f"DataValidator: dataset has {len(data)} rows which exceeds max_rows_limit={config.max_rows_limit}; sampling will be used"
+            )
+
+            if config.sampling_strategy == "random":
+                data_to_use = data.sample(n=config.max_rows_limit, random_state=self.random_state)
+            else:
+                data_to_use = data.iloc[: config.max_rows_limit].copy()
+
+            # Create a shallow copy of config and disable expensive checks
+            cfg_dict = asdict(config)
+            cfg_dict["check_duplicates"] = False
+            cfg_dict["normality_tests"] = False
+            cfg_dict["check_distributions"] = False
+            cfg_dict["expensive_checks"] = False
+            effective_config = ValidationConfig(**cfg_dict)
+
+            # Record sampling in results
+            # results object not yet created; we'll set these fields after creating results
+
         start_time = datetime.now()
 
         try:
@@ -238,43 +271,53 @@ class DataValidator:
                     n_samples=len(data),
                     n_features=data.shape[1],
                     validation_timestamp=start_time.isoformat(),
-                    config=config,
+                    config=effective_config,
                 )
 
-                # Basic data validation
-                self._validate_basic_properties(data, results, config)
+                # If sampling occurred, record it on the results
+                if data_to_use is not data:
+                    results.was_sampled = True
+                    results.sampled_from_n = len(data)
+                    results.sampled_n = len(data_to_use)
+
+                # Basic data validation (operate on sampled or full data)
+                self._validate_basic_properties(data_to_use, results, effective_config)
 
                 # Schema validation
-                if config.check_data_types or config.enforce_schema:
-                    self._validate_schema(data, results, config)
+                if effective_config.check_data_types or effective_config.enforce_schema:
+                    self._validate_schema(data_to_use, results, effective_config)
 
                 # Missing value analysis
-                if config.check_missing_values:
-                    self._analyze_missing_values(data, results, config)
+                if effective_config.check_missing_values:
+                    self._analyze_missing_values(data_to_use, results, effective_config)
 
                 # Outlier detection
-                if config.check_outliers:
-                    self._detect_outliers(data, results, config, target_column)
+                if effective_config.check_outliers and effective_config.expensive_checks:
+                    self._detect_outliers(data_to_use, results, effective_config, target_column)
 
                 # Correlation analysis
-                if config.check_correlation:
-                    self._analyze_correlations(data, results, config, target_column)
+                if effective_config.check_correlation and effective_config.expensive_checks:
+                    self._analyze_correlations(data_to_use, results, effective_config, target_column)
 
                 # Distribution analysis
-                if config.check_distributions:
-                    self._analyze_distributions(data, results, config, target_column)
+                if effective_config.check_distributions and effective_config.expensive_checks:
+                    self._analyze_distributions(data_to_use, results, effective_config, target_column)
 
                 # Sample weights validation
-                if sample_weight is not None and config.validate_sample_weights:
-                    self._validate_sample_weights(sample_weight, data, results, config)
+                if sample_weight is not None and effective_config.validate_sample_weights:
+                    self._validate_sample_weights(sample_weight, data_to_use, results, effective_config)
 
                 # Feature profiling (skip when not generating reports to save memory)
-                if config.generate_report:
-                    self._profile_features(data, results, config, target_column)
+                if effective_config.generate_report:
+                    self._profile_features(data_to_use, results, effective_config, target_column)
 
-                # Data drift detection (if reference data provided)
-                if reference_data is not None and config.distribution_comparison:
-                    self._detect_data_drift(data, reference_data, results, config)
+                # Data drift detection (if reference data provided) - compare against reference (do not sample reference)
+                if (
+                    reference_data is not None
+                    and effective_config.distribution_comparison
+                    and effective_config.expensive_checks
+                ):
+                    self._detect_data_drift(data_to_use, reference_data, results, effective_config)
 
                 # Compute overall data quality score
                 self._compute_data_quality_score(results)

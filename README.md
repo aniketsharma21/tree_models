@@ -10,6 +10,7 @@ A comprehensive, production-ready Python package for tree-based machine learning
 ## 🚀 **Key Features**
 
 ### **🔧 Core Capabilities**
+
 - **Unified Training Interface**: Support for XGBoost, LightGBM, and CatBoost
 - **Comprehensive Evaluation**: Advanced metrics, ROC analysis, calibration, threshold optimization
 - **Data Validation**: Comprehensive quality assessment and anomaly detection
@@ -17,6 +18,7 @@ A comprehensive, production-ready Python package for tree-based machine learning
 - **Model Explainability**: SHAP integration, scorecards, reason codes, partial dependence
 
 ### **🏭 Production-Ready Features**
+
 - **Type Safety**: Full type hints and validation throughout
 - **Error Handling**: Robust exception handling with detailed contexts
 - **Performance Optimization**: Memory-efficient processing for large datasets
@@ -25,6 +27,7 @@ A comprehensive, production-ready Python package for tree-based machine learning
 - **Comprehensive Testing**: Unit, integration, and performance tests
 
 ### **📊 Advanced Analytics**
+
 - **Sample Weights**: Full integration throughout all workflows
 - **Statistical Validation**: Confidence intervals, significance testing
 - **Business Metrics**: Cost-based evaluation and threshold optimization
@@ -34,11 +37,13 @@ A comprehensive, production-ready Python package for tree-based machine learning
 ## 📦 **Installation**
 
 ### **Quick Install**
+
 ```bash
 pip install tree-models
 ```
 
 ### **Development Installation**
+
 ```bash
 git clone https://github.com/your-username/tree-models.git
 cd tree-models
@@ -46,11 +51,12 @@ make install
 ```
 
 ### **Optional Dependencies**
+
 ```bash
 # For XGBoost support
 pip install xgboost
 
-# For LightGBM support  
+# For LightGBM support
 pip install lightgbm
 
 # For CatBoost support
@@ -66,6 +72,7 @@ pip install plotly
 ## 🏃‍♂️ **Quick Start**
 
 ### **Simple Model Training**
+
 ```python
 import pandas as pd
 from tree_models import train_model, evaluate_model
@@ -85,7 +92,18 @@ evaluation = evaluate_model(results.model, X_test, y_test)
 print(f"AUC: {evaluation.metrics['auc']:.4f}")
 ```
 
+### **Run the quick example script**
+
+The repository includes a small runnable example that uses the shipped sample dataset. From the repository root run:
+
+```bash
+python -m examples.run_quick_example
+```
+
+This script demonstrates `DataValidator` sampling and a lightweight training run using `ModelTrainer(random_state=42)`.
+
 ### **Complete ML Pipeline**
+
 ```python
 from tree_models.data import validate_dataset, FeatureEngineer
 from tree_models.config import create_advanced_data_config
@@ -97,7 +115,7 @@ print(f"Data quality score: {validation_results.data_quality_score:.2f}/100")
 # 2. Engineer features
 engineer = FeatureEngineer()
 fe_results = engineer.engineer_features(
-    df, 
+    df,
     config=FeatureEngineeringConfig(
         log_transform_cols=['income', 'amount'],
         extract_date_features=['transaction_date'],
@@ -119,34 +137,40 @@ with start_experiment("fraud_detection", "baseline_v1") as tracker:
 ### **Core Modules**
 
 #### **🤖 Models**
+
 - `ModelTrainer`: Unified training interface for tree-based models
 - `ModelEvaluator`: Comprehensive evaluation with advanced metrics
 - `FeatureSelector`: Multiple feature selection algorithms
 - `RobustnessAnalyzer`: Model stability and robustness testing
 
 #### **🔍 Explainability**
+
 - `SHAPExplainer`: Enhanced SHAP integration with performance optimization
 - `ScorecardConverter`: Business scorecard generation with calibration
 - `ReasonCodeGenerator`: Regulatory-compliant explanations
 - `PartialDependencePlotter`: PD and ICE plots with interactions
 
 #### **📊 Data Processing**
+
 - `DataValidator`: Comprehensive data quality assessment
 - `AdvancedDataPreprocessor`: Production-ready preprocessing pipeline
 - `FeatureEngineer`: 15+ transformation types with domain helpers
 
 #### **⚙️ Configuration**
+
 - `DataConfig`: Type-safe data processing configuration
 - `ModelConfig`: Model-specific configurations (XGBoost, LightGBM, CatBoost)
 - `ConfigLoader`: YAML/JSON configuration loading with validation
 
 #### **📈 Tracking**
+
 - `MLflowTracker`: Enhanced MLflow integration with auto-logging
 - `ExperimentTracker`: High-level experiment management
 
 ### **Usage Examples**
 
 #### **Advanced Feature Engineering**
+
 ```python
 from tree_models.data.feature_engineer import create_financial_features
 
@@ -159,6 +183,7 @@ results = create_financial_features(
 ```
 
 #### **Model Comparison**
+
 ```python
 from tree_models.models.evaluator import compare_models
 
@@ -173,6 +198,7 @@ print(f"Best model: {comparison['best_model']} (AUC: {comparison['best_score']:.
 ```
 
 #### **SHAP Explanations**
+
 ```python
 from tree_models.explainability import SHAPExplainer
 
@@ -187,6 +213,7 @@ explainer.plot_waterfall(results.shap_values, instance_idx=0)
 ## 🧪 **Testing**
 
 ### **Run Tests**
+
 ```bash
 # Run all tests
 make test
@@ -205,6 +232,7 @@ make format
 ```
 
 ### **Test Categories**
+
 - **Unit Tests**: Component-level testing with mocking
 - **Integration Tests**: End-to-end pipeline testing
 - **Performance Tests**: Benchmarks and scalability validation
@@ -212,6 +240,7 @@ make format
 ## 🚀 **Development**
 
 ### **Setup Development Environment**
+
 ```bash
 # Clone repository
 git clone https://github.com/your-username/tree-models.git
@@ -228,6 +257,7 @@ make setup-hooks
 ```
 
 ### **Project Structure**
+
 ```
 tree_models/
 ├── models/                 # Core ML components
@@ -248,6 +278,7 @@ examples/
 ```
 
 ### **Contributing Guidelines**
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Run tests (`make test`)
@@ -256,6 +287,7 @@ examples/
 6. Open a Pull Request
 
 ### **Code Standards**
+
 - **Type Hints**: All functions must have type hints
 - **Docstrings**: Google-style docstrings required
 - **Testing**: 90%+ code coverage required
@@ -265,6 +297,7 @@ examples/
 ## 📋 **Requirements**
 
 ### **Core Dependencies**
+
 - **Python**: 3.8+
 - **pandas**: >=1.3.0
 - **numpy**: >=1.21.0
@@ -272,6 +305,7 @@ examples/
 - **pydantic**: >=1.8.0
 
 ### **Optional Dependencies**
+
 - **xgboost**: >=1.5.0 (for XGBoost models)
 - **lightgbm**: >=3.2.0 (for LightGBM models)
 - **catboost**: >=1.0.0 (for CatBoost models)
@@ -282,6 +316,7 @@ examples/
 ## 🔧 **Configuration**
 
 ### **YAML Configuration Example**
+
 ```yaml
 # config/xgboost_config.yaml
 experiment:
@@ -311,6 +346,7 @@ preprocessing:
 ```
 
 ### **Loading Configuration**
+
 ```python
 from tree_models.config import load_config
 
@@ -321,11 +357,13 @@ results = train_model(config.model, X_train, y_train)
 ## 📊 **Performance Benchmarks**
 
 ### **Scalability** (tested on standard hardware)
+
 - **Small datasets** (1K samples, 10 features): <1s processing
-- **Medium datasets** (100K samples, 50 features): <30s processing  
+- **Medium datasets** (100K samples, 50 features): <30s processing
 - **Large datasets** (1M+ samples): Memory-efficient chunked processing
 
 ### **Memory Efficiency**
+
 - **Validation**: <2x data size memory overhead
 - **Preprocessing**: Streaming processing for large datasets
 - **Feature Engineering**: Configurable memory limits
@@ -333,16 +371,20 @@ results = train_model(config.model, X_train, y_train)
 ## 🤝 **Community & Support**
 
 ### **Getting Help**
+
 - 📖 **Documentation**: [https://tree-models.readthedocs.io](https://tree-models.readthedocs.io)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/your-username/tree-models/discussions)  
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/your-username/tree-models/discussions)
 - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/your-username/tree-models/issues)
 - 📧 **Email**: support@tree-models.dev
 
 ### **Contributing**
+
 We welcome contributions! See our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### **Citation**
+
 If you use tree-models in your research, please cite:
+
 ```bibtex
 @software{tree_models,
   title = {Tree Models: Production-Ready Tree-Based Machine Learning},
@@ -359,18 +401,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🎯 **Roadmap**
 
 ### **Current Version (1.0.0)**
+
 - ✅ Core training and evaluation
 - ✅ Comprehensive data processing
 - ✅ Basic explainability features
 - ✅ Configuration management
 
 ### **Planned Features (1.1.0)**
+
 - 🔄 AutoML capabilities
 - 🔄 Advanced ensemble methods
 - 🔄 Real-time inference optimization
 - 🔄 Cloud deployment utilities
 
 ### **Future Enhancements**
+
 - 🔮 Deep learning integration
 - 🔮 Distributed training support
 - 🔮 Advanced fairness metrics

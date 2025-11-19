@@ -22,6 +22,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
+import random
 
 from ..config.model_config import CatBoostConfig, LightGBMConfig, ModelConfig, XGBoostConfig
 from ..utils.exceptions import (
@@ -255,16 +256,28 @@ class ModelTrainer:
                         )
                     )
 
-                # Initialize model
+                # Set deterministic seeds for reproducibility
+                try:
+                    np.random.seed(self.random_state)
+                    random.seed(self.random_state)
+                except Exception:
+                    # Non-fatal if seeding fails for some reason
+                    logger.debug("Failed to set RNG seeds for reproducibility")
+
+                # Initialize model (adapters may create model internally)
                 model = self._create_model(model_config, training_config)
 
                 # Configure training parameters
                 train_params = self._prepare_training_parameters(model_config, training_config, X_valid is not None)
 
-                # Train model based on type
-                if model_config.model_type == "xgboost":
-                    results = self._train_xgboost(
-                        model,
+                # Use model adapters to dispatch library specific training
+                try:
+                    # Lazy import to avoid circular imports at module import time
+                    from .adapters.factory import get_adapter
+
+                    adapter = get_adapter(model_config.model_type)
+                    results = adapter.train(
+                        self,
                         model_config,
                         X_train,
                         y_train,
@@ -275,34 +288,8 @@ class ModelTrainer:
                         train_params,
                         training_config,
                     )
-                elif model_config.model_type == "lightgbm":
-                    results = self._train_lightgbm(
-                        model,
-                        model_config,
-                        X_train,
-                        y_train,
-                        X_valid,
-                        y_valid,
-                        sample_weight,
-                        validation_weight,
-                        train_params,
-                        training_config,
-                    )
-                elif model_config.model_type == "catboost":
-                    results = self._train_catboost(
-                        model,
-                        model_config,
-                        X_train,
-                        y_train,
-                        X_valid,
-                        y_valid,
-                        sample_weight,
-                        validation_weight,
-                        train_params,
-                        training_config,
-                    )
-                else:
-                    raise ConfigurationError(f"Unsupported model type: {model_config.model_type}")
+                except ValueError as ve:
+                    raise ConfigurationError(str(ve))
 
                 # Post-training analysis
                 if training_config.enable_feature_importance:

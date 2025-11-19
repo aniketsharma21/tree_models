@@ -18,6 +18,7 @@ except Exception:  # pragma: no cover - optional dependency
     _OPTUNA_AVAILABLE = False
 import numpy as np
 import pandas as pd
+import random
 from typing import Dict, Any, Optional, List, Union, Callable, Tuple, Protocol
 from pathlib import Path
 import warnings
@@ -488,6 +489,12 @@ if _OPTUNA_AVAILABLE:
         trial_start_time = time.time()
 
         try:
+            # Set deterministic seeds for reproducibility inside each trial
+            try:
+                np.random.seed(self.random_state + (trial.number if hasattr(trial, "number") else 0))
+                random.seed(self.random_state + (trial.number if hasattr(trial, "number") else 0))
+            except Exception:
+                pass
             # Check trial timeout
             if self.scoring_config.timeout_per_trial:
                 trial.set_user_attr("timeout", self.scoring_config.timeout_per_trial)
@@ -685,6 +692,12 @@ if _OPTUNA_AVAILABLE:
             self.search_space = search_space
 
         try:
+            # Seed global RNG for reproducible optimization runs
+            try:
+                np.random.seed(self.random_state)
+                random.seed(self.random_state)
+            except Exception:
+                pass
             # Create study
             self.study = self._create_study()
 
